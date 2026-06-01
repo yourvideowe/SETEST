@@ -54,11 +54,17 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 確保隱藏卡片渲染時不受視窗大小干擾 */
+    /* 確保隱藏卡片在 Safari/iOS 手機版上正常渲染 (1px 裁剪法，不使用 offscreen 避免 Webkit 略過 layout) */
     .render-container {
-      position: absolute;
-      left: -9999px;
-      top: -9999px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      z-index: -100;
+      pointer-events: none;
+      opacity: 0.02;
     }
   </style>
 </head>
@@ -151,7 +157,7 @@
         shortDesc: '靠真誠建立社群，客人找的不是技術，而是「懂我的你」。',
         desc:'你靠真誠和溫度建立社群。吸引你的受眾不只是要做頭髮，他們要的是「那個懂我的設計師」。信任是你最大的資產，也是推薦產品最有力的後盾。',
         audience:[
-          {icon:'🤝', title:'尋求懂我的人', desc:'他們選設計師的標準不只是作品，更在乎「跟這個人聊不聊得來」。你的個性本身就是最強的吸引力。'},
+          {icon:'🤝', title:'尋求懂我的人', desc:'他們選設計師的標準不じる作品，更在乎「跟這個人聊不聊得來」。你的個性本身就是最強的吸引力。'},
           {icon:'🔁', title:'超高黏著回頭客', desc:'一旦建立信任，他們幾乎不會換人。定期回來不只是保養頭髮，也是來找你說說話。'},
           {icon:'📣', title:'熱心口碑傳播者', desc:'他們推薦你不需要理由，因為介紹朋友給「懂我的設計師」，對他們來說是一種分享好東西的樂趣。'}
         ],
@@ -258,8 +264,8 @@
       const [isGenerating, setIsGenerating] = useState(false);
       const shareCardRef = useRef(null);
 
-      // 本地端直接生成 QR Code，不請求外部 API
-      useEffect(() => {
+      // 動態更新/生成本地 QR Code，避開外部網路跨域攔截
+      const updateQrCode = () => {
         if (typeof QRious !== 'undefined') {
           const qr = new QRious({
             value: window.location.href || 'https://lin.ee/YF1AjRg',
@@ -270,7 +276,12 @@
           });
           setQrUrl(qr.toDataURL());
         }
-      }, []);
+      };
+
+      // 每次切換頁面 (特別是進到 result) 時重整 QR Code
+      useEffect(() => {
+        updateQrCode();
+      }, [page]);
 
       const resetState = () => {
         setCur(0);
@@ -374,13 +385,22 @@
       const generateIGStory = async () => {
         if (!shareCardRef.current) return;
         setIsGenerating(true);
+        updateQrCode(); // 生成前確保 QR Code 是最新生成的本地 base64
+        
         try {
-          // html2canvas 在純色底與 base64 圖片下運作最為穩定
+          // html2canvas 針對手機排版必須強制鎖定其原始擷取寬高與座標，避免視窗寬度裁剪
           const canvas = await html2canvas(shareCardRef.current, {
             scale: 2, 
-            useCORS: true, 
+            useCORS: true,
+            allowTaint: true,
             backgroundColor: '#FFF9E5',
-            logging: false
+            logging: false,
+            width: 480,
+            height: 853,
+            windowWidth: 480,
+            windowHeight: 853,
+            x: 0,
+            y: 0
           });
           const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
           setIgImage(dataUrl);
@@ -572,11 +592,11 @@
               </button>
             </div>
 
-            {}
+            {/* 1px 裁剪防屏蔽容器 - 完美的 iOS/Safari 截圖解決方案 */}
             <div className="render-container" aria-hidden="true">
               <div ref={shareCardRef} className="w-[480px] h-[853px] bg-[#FFF9E5] flex flex-col items-center relative box-border overflow-hidden font-sans p-6 pt-12">
                 
-                {/* 背景紙張雜訊質感 (移除複雜 blur，保留 100% 穩定的紙質紋路) */}
+                {/* 背景紙張雜訊質感 */}
                 <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'300\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.75\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'300\' height=\'300\' filter=\'url(%23n)\'/%3E%3C/svg%3E")' }}></div>
 
                 {/* 頂部：動物圖像與標題 */}
@@ -627,7 +647,7 @@
                      </div>
                   </div>
 
-                  {/* 圖鑑排列：吸引的受眾 (100% 相容，無外連 CORS) */}
+                  {/* 圖鑑排列：吸引的受眾 */}
                   <div className="flex justify-between items-start gap-3 mt-5">
                     {p.audience.map((a, i) => (
                       <div key={i} className="flex flex-col items-center flex-1">
@@ -642,7 +662,7 @@
                   </div>
                 </div>
 
-                {}
+                {/* 底部品牌與條碼 */}
                 <div className="absolute bottom-0 left-0 w-full px-8 py-7 flex justify-between items-center z-10">
                    <div className="flex flex-col">
                       <div className="text-[1.2rem] font-black text-[#db6014] tracking-wider leading-none">RENATA</div>
@@ -804,9 +824,9 @@
               </div>
             </div>
 
-            {}
+            {/* 推廣與複製連結 */}
             <div className="mt-8 mb-2 print:hidden text-center">
-              <div className="text-[1.05rem] font-bold text-[#2C1A0A] mb-1">喜歡這份分析嗎？</div>
+              <div className="text-[1.05rem] font-bold text-[#2C1A0A] mb-1">喜歡這份 analysis 嗎？</div>
               <div className="text-[0.875rem] text-[#6B4423] mb-4">分享給你的朋友，讓他們也測測看吧！</div>
               <button 
                 onClick={copyLink}
@@ -846,7 +866,7 @@
             {toastMsg}
           </div>
 
-          {}
+          {/* IG 截圖預覽 Modal */}
           {showIGModal && (
             <div className="fixed inset-0 bg-black/85 z-[99999] flex flex-col items-center justify-center p-6 opacity-100 transition-opacity">
               <div className="w-full max-w-[360px] relative animate-[fadeUp_0.3s_ease-out]">
