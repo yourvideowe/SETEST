@@ -164,7 +164,7 @@
         insight:'你的受眾是「關係型消費者」——他們把找設計師視為長期關係，換人的門檻很高。對你的推薦信任度極高，你說好的產品他們幾乎都願意試，是最穩定的推廣渠道。',
         bars:[{l:'客人忠誠度',p:90,c:'#8A9E88'},{l:'口碑擴散力',p:85,c:'#A05828'},{l:'潛客觸及率',p:48,c:'#8A9E88'}],
         tips:[
-          {i:'☕',t:'幕後日常 Vlog',s:'紀錄工作間隙或備料過程，不需要華麗轉場，原音呈現你跟客人的真實互動。拍完直接發，不修也沒關係，真實感比精緻感更有傳播力。'},
+          {i:'☕',t:'幕後日常 Vlog',s:'紀錄工作間隙 or 備料過程，不需要華麗轉場，原音呈現你跟客人的真實互動。拍完直接發，不修也沒關係，真實感比精緻感更有傳播力。'},
           {i:'💬',t:'客人心聲短影音',s:'做完之後讓客人對鏡頭說一句話就好，不需要腳本。「妳覺得今天做完跟之前有什麼不一樣？」30 秒以內，原音原色，比任何廣告都有說服力。'}
         ],
         products:[
@@ -209,7 +209,7 @@
           {
             name:'專業級護色髮品', tag:'好說故事',
             why:'有科學依據的配方，你能說清楚為什麼值得，不需要打折就能成交。',
-            shoot:'用色票或比色卡呈現「有用 vs 沒用護色品」的顏色維持差異，搭配你的解說。視覺化的科學說明讓專業感立即提升，這種內容收藏率是一般貼文的 3 倍。',
+            shoot:'用色票 or 比色卡呈現「有用 vs 沒用護色品」的顏色維持差異，搭配你的解說。視覺化的科學說明讓專業感立即提升，這種內容收藏率是一般貼文的 3 倍。',
             script:'「一般護色洗髮精只是在頭髮表面形成薄膜，這款的分子結構可以滲透進角質層，從內鎖住色素分子。所以即使天天洗，顏色流失速度也比一般慢很多。我跟妳說為什麼值得這個價格⋯⋯」'
           }
         ]
@@ -370,7 +370,7 @@
       const openLine = () => {
         const pk = classify();
         const p = PERSONAS[pk];
-        const msg = `嗨！我剛完成了社群人格分析測驗\n人格類型：${p.animalName} (${p.name})\n\n想了解更多關於社群與內容行銷的規劃 🙌`;
+        const msg = `嗨！我剛完成了社群人格 analysis 測驗\n人格類型：${p.animalName} (${p.name})\n\n想了解更多關於社群與內容行銷的規劃 🙌`;
         window.open(`${LINE_URL}?text=${encodeURIComponent(msg)}`, '_blank');
       };
 
@@ -592,7 +592,7 @@
               </button>
             </div>
 
-            {/* 1px 裁剪防屏蔽容器 - 完美的 iOS/Safari 截圖解決方案 */}
+            {}
             <div className="render-container" aria-hidden="true">
               <div ref={shareCardRef} className="w-[480px] h-[853px] bg-[#FFF9E5] flex flex-col items-center relative box-border overflow-hidden font-sans p-6 pt-12">
                 
@@ -803,6 +803,7 @@
 
             <hr className="border-t border-[#E8DDD0] my-6 print:hidden" />
 
+            {}
             {/* CTA Blocks (傳給業務) */}
             <div className="bg-[#2C1A0A] rounded-[14px] p-6 mt-3 relative overflow-hidden print:hidden">
               <div className="absolute w-[200px] h-[200px] top-[-80px] right-[-40px] pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(219,96,20,.2), transparent 70%)' }}></div>
@@ -811,7 +812,7 @@
                 想把這份結果變成實際銷售內容？
               </div>
               <div className="text-[0.875rem] text-[#E8DDD0] leading-relaxed mb-6 relative z-10">
-                你可以先 and 業務討論適合的髮品組合，再由吼莉協助規劃社群內容與短影音拍攝，讓產品不只是被介紹，而是被客人看懂、被需要。
+                你可以先和業務討論適合的髮品組合，再由吼莉協助規劃社群內容與短影音拍攝，讓產品不只是被介紹，而是被客人看懂、被需要。
               </div>
               
               <div className="flex flex-col gap-3 relative z-10">
@@ -824,9 +825,10 @@
               </div>
             </div>
 
+            {}
             {/* 推廣與複製連結 */}
             <div className="mt-8 mb-2 print:hidden text-center">
-              <div className="text-[1.05rem] font-bold text-[#2C1A0A] mb-1">喜歡這份 analysis 嗎？</div>
+              <div className="text-[1.05rem] font-bold text-[#2C1A0A] mb-1">喜歡這份分析嗎？</div>
               <div className="text-[0.875rem] text-[#6B4423] mb-4">分享給你的朋友，讓他們也測測看吧！</div>
               <button 
                 onClick={copyLink}
@@ -866,6 +868,7 @@
             {toastMsg}
           </div>
 
+          {}
           {/* IG 截圖預覽 Modal */}
           {showIGModal && (
             <div className="fixed inset-0 bg-black/85 z-[99999] flex flex-col items-center justify-center p-6 opacity-100 transition-opacity">
