@@ -5,15 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>社群人格分析測驗｜RENATA × Holymake</title>
   
+  <!-- 載入 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 載入 Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
   
+  <!-- 載入 React 核心庫 -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- 載入 html2canvas (將 HTML 轉換為圖片) -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  
+  <!-- 載入 QRious (純前端本地端生成 QR Code，解決手機跨域安全封鎖問題) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
   <style>
@@ -23,6 +31,7 @@
       color: #2C1A0A;
       -webkit-font-smoothing: antialiased;
     }
+    /* 背景雜訊紋理 */
     body::before {
       content: ''; 
       position: fixed; 
@@ -39,22 +48,23 @@
       body::before { display: none !important; }
     }
     
+    /* 手機彈窗淡入動畫 */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ✅ 已修復：改成正常尺寸離屏渲染，解決 iOS Safari 無法截圖問題 */
+    /* 隱藏截圖卡片的 1px 裁剪法：保持寬高使 Webkit 正常排版渲染，但不佔用視覺空間且隱形 */
     .render-container {
       position: fixed;
-      top: -9999px;
+      top: 0;
       left: 0;
-      width: 480px;
-      height: 853px;
+      width: 1px;
+      height: 1px;
       overflow: hidden;
-      z-index: -9999;
+      z-index: -100;
       pointer-events: none;
-      opacity: 0;
+      opacity: 0.02;
     }
   </style>
 </head>
@@ -67,7 +77,176 @@
     const LINE_URL = 'https://lin.ee/YF1AjRg';
     const PHASES = ['社群人格', '吸引的觀眾', '觀眾需求'];
 
-    // ...（PERSONAS 和 QS 保持不變，為了篇幅省略）
+    const QS = [
+      { phase:0, text:'你在社群上最常發什麼類型的內容？', opts:[
+        {t:'染燙前後對比、造型成品照',d:{visual:3,trend:1}},
+        {t:'日常工作紀錄、與客人的互動',d:{story:3,warm:1}},
+        {t:'護髮知識、成分解析、教學貼文',d:{edu:3,trust:1}},
+        {t:'跟上流行、話題標籤、時事髮色',d:{trend:3,visual:1}}
+      ]},
+      { phase:0, text:'你的貼文通常會得到什麼反應？', opts:[
+        {t:'大量收藏和分享，觸及陌生人多',d:{reach:3,visual:1}},
+        {t:'老客人留言互動、私訊詢問',d:{loyal:3,warm:2}},
+        {t:'同業或對護髮有研究的人討論',d:{edu:2,trust:2}},
+        {t:'新追蹤者增加，問「在哪做的」',d:{reach:2,trend:2}}
+      ]},
+      { phase:1, text:'你覺得追蹤你的人，最主要的動機是？', opts:[
+        {t:'被你的作品吸引，想預約同款',d:{booking:3,visual:1}},
+        {t:'認識你這個人，想來找你聊',d:{warm:3,loyal:2}},
+        {t:'想學習護髮知識或技術',d:{edu:3,trust:1}},
+        {t:'喜歡你分享的流行資訊',d:{trend:3,reach:1}}
+      ]},
+      { phase:1, text:'你的客人通常怎麼找到你？', opts:[
+        {t:'看到作品照然後私訊詢問',d:{visual:2,booking:2}},
+        {t:'朋友介紹、口碑相傳',d:{loyal:3,warm:2}},
+        {t:'搜尋特定髮型或技術關鍵字',d:{edu:2,trust:2}},
+        {t:'被標籤、限動、話題吸引進來',d:{trend:2,reach:2}}
+      ]},
+      { phase:2, text:'你的客人最常在意什麼？', opts:[
+        {t:'跟上流行、拍出來好看',d:{trend:2,visual:2}},
+        {t:'適合自己的風格、自然感',d:{warm:2,loyal:2}},
+        {t:'髮質健康、不傷頭髮',d:{trust:3,edu:1}},
+        {t:'維持造型的方便度、居家保養',d:{edu:2,trust:2}}
+      ]},
+      { phase:2, text:'你通常用什麼方式向客人推薦產品？', opts:[
+        {t:'做完直接示範效果，現場成交',d:{booking:2,visual:2}},
+        {t:'聊天過程中自然帶到，不強迫',d:{warm:3,loyal:1}},
+        {t:'解釋成分原理，講清楚為什麼需要',d:{edu:3,trust:2}},
+        {t:'拍成內容放上社群，讓客人自己問',d:{reach:2,trend:1}}
+      ]}
+    ];
+
+    const PERSONAS = {
+      visual:{
+        name:'造型視覺型設計師', emoji:'📸',
+        animalEmoji:'🦚', animalName:'濾鏡孔雀', rarity: 18,
+        animalHashtags: ['#孔雀級審美', '#視覺細節控', '#作品即名片'],
+        shortDesc: '社群就是你的視覺作品集，靠極致美感與驚豔作品讓人一眼淪陷。',
+        desc:'你的社群是一本視覺作品集，吸引的是被造型驚豔的潛在客戶。你的受眾高度視覺導向，做決定前需要「看到效果」。成交的關鍵是讓產品成為視覺內容的一部分。',
+        audience:[
+          {icon:'👁️', title:'眼球至上主義者', desc:'他們在追蹤你之前，已經反覆看過你的作品。一張照片的衝擊感，比任何文字說明都有力。'},
+          {icon:'⚡', title:'衝動型預約新客', desc:'一旦看到喜歡的造型，行動速度很快。你只需要在對的時機出現，他們會自己找上門。'},
+          {icon:'🔄', title:'審美共鳴追隨者', desc:'他們同時追蹤多個設計師，但一旦找到真正懂自己審美的人，就會建立長期關係。'}
+        ],
+        insight:'你的受眾是「慾望型消費者」——他們不是因為需要才來，而是因為被你的作品點燃了想改變的欲望。衝動但有熱情，關鍵是在他們最有感覺的那一刻讓他們採取行動。',
+        bars:[{l:'視覺吸引力',p:92,c:'#E07030'},{l:'潛客轉換率',p:78,c:'#A05828'},{l:'受眾黏著度',p:55,c:'#E07030'}],
+        tips:[
+          {i:'🎬',t:'Reels 造型過程',s:'15–30 秒快節奏剪輯，不用刻意對鏡頭說話，專注展現操作細節。從吹整、上色到成品一氣痕成，觸及陌生受眾效果最好。'},
+          {i:'📸',t:'前後對比短影音',s:'同一個角度、同一盞燈，拍改變前後的 5 秒素材。固定格式讓人一眼認出是你的作品，演算法也愛這種高完成率的內容。'},
+          {i:'🏷️',t:'限動投票 → 私訊導流',s:'「你想染這個色嗎？」丟出投票後，主動私訊所有選「想」的人。不用等他們開口，縮短從追蹤到預約的距離。'}
+        ],
+        products:[
+          {
+            name:'護色鎖色精華', tag:'配合染後服務',
+            why:'你的客人在乎顏色維持效果，這是他們願意在沙龍外持續消費的品項。搭配染髮服務一起帶走，自然成交。',
+            shoot:'做完直接示範光澤效果，15–30 秒快剪，不用對鏡頭說話，專注手部動作。從染後沖洗、上精華到成品光澤一氣呵成，讓觀眾直接看到「前後差異」。',
+            script:'「這瓶護色精華搭配我們的染色技術，可以讓顏色維持延長 2–3 週。我建議每次染完都帶一瓶回家，這樣效果會更穩定——妳剛才看到我示範的光澤，就是用這個。」'
+          },
+          {
+            name:'造型定型噴霧', tag:'拍照必備',
+            why:'讓造型在拍照時更完美呈現，同時讓客人回家後能重現效果——自然產生回購需求。',
+            shoot:'吹整收尾時噴上，鏡頭抓住髮絲定型的瞬間。結尾用慢動作展示成品，配上乾淨背景，5 秒就能讓人想截圖收藏。',
+            script:'「這款噴霧讓造型撐一整天，妳回家自己噴，效果跟現在差不多。以後不用每次出門前都擔心頭髮跑掉。」'
+          }
+        ]
+      },
+      warm:{
+        name:'關係溫度型設計師', emoji:'☕',
+        animalEmoji:'🦦', animalName:'暖心水豚', rarity: 26,
+        animalHashtags: ['#暖流守護者', '#走心天花板', '#靈魂傾聽大師'],
+        shortDesc: '用真誠與陪伴溫暖人心，客人找的不只是技術，而是懂他的你。',
+        desc:'你靠真誠和溫度建立社群。吸引你的受眾不只是要做頭髮，他們要的是「那個懂我的設計師」。信任是你最大的資產，也是推薦產品最有力的後盾。',
+        audience:[
+          {icon:'🤝', title:'尋求懂我的人', desc:'他們選設計師的標準不只是作品，更在乎「跟這個人聊不聊得來」。你的個性本身就是最強的吸引力。'},
+          {icon:'🔁', title:'超高黏著回頭客', desc:'一旦建立信任，他們幾乎不會換人。定期回來不只是保養頭髮，也是來找你說說話。'},
+          {icon:'📣', title:'熱心口碑傳播者', desc:'他們推薦你不需要理由，因為介紹朋友給「懂我的設計師」，對他們來說是一種分享好東西的樂趣。'}
+        ],
+        insight:'你的受眾是「關係型消費者」——他們把找設計師視為長期關係，換人的門檻很高。對你的推薦信任度極高，你說好的產品他們幾乎都願意試，是最穩定的推廣渠道。',
+        bars:[{l:'客人忠誠度',p:90,c:'#8A9E88'},{l:'口碑擴散力',p:85,c:'#A05828'},{l:'潛客觸及率',p:48,c:'#8A9E88'}],
+        tips:[
+          {i:'☕',t:'幕後日常 Vlog',s:'紀錄工作間隙 or 備料過程，不需要華麗轉場，原音呈現你跟客人的真實互動。拍完直接發，不修也沒關係，真實感比精緻感更有傳播力。'},
+          {i:'💬',t:'客人心聲短影音',s:'做完之後讓客人對鏡頭說一句話就好，不需要腳本。「妳覺得今天做完跟之前有什麼不一樣？」30 秒以內，原音原色，比任何廣告都有說服力。'}
+        ],
+        products:[
+          {
+            name:'居家深層護髮組', tag:'回流客必推',
+            why:'你的回流客信任你的推薦，護髮組是最自然的「每次帶一組回家」品項，能穩定創造被動收入。',
+            shoot:'邊幫客人做護髮邊介紹，原音收錄，像跟老朋友說話。結尾讓客人拿著產品拍一個笑臉，不用說話，表情就是最好的推薦。',
+            script:'「這組我自己在用，每週敷一次，妳摸我的頭髮——是不是很軟？我幫妳搭配好帶回去，下次回來妳可以跟我說差別在哪。」'
+          },
+          {
+            name:'頭皮養護精華', tag:'信任感加分',
+            why:'長期客人更在意頭皮健康，這類專業級產品用你的解說推薦效果最好，建立你的專業信任感。',
+            shoot:'施作時對著鏡頭自然說話，像在跟客人聊天。不用腳本，把平常解說的話說一遍就好，客人在旁邊的反應就是最真實的背書。',
+            script:'「妳這個頭皮最近比較容易出油對嗎？這款精華可以幫妳調節，不是洗掉油脂，而是讓頭皮自己恢復平衡。長期用下來，我幫妳觀察，通常第三週開始會有感覺。」'
+          }
+        ]
+      },
+      edu:{
+        name:'知識專業型設計師', emoji:'🔬',
+        animalEmoji:'🦉', animalName:'百科貓頭鷹', rarity: 12,
+        animalHashtags: ['#成分考究家', '#理性腦權威', '#髮質診斷大師'],
+        shortDesc: '用知識和數據說話，你的專業診斷與成分解析就是最佳背書。',
+        desc:'你用知識和專業建立信任。你的受眾是「認真研究過才來的」，對你有高度信任，也願意為真正好的產品買單。你的推薦對他們來說是「專家背書」。',
+        audience:[
+          {icon:'🔍', title:'理性研究狂熱者', desc:'他們在追蹤你之前就做過功課了。看過你多篇貼文、比較過幾個設計師，才決定聯繫你——所以一旦來了，意願很強。'},
+          {icon:'🧠', title:'精準發問的鐵粉', desc:'他們不只問「怎麼讓頭髮變好」，他們會問「我這個髮質適合用什麼成分」。這是高信任度的表現，也是你最好的推薦時機。'},
+          {icon:'💎', title:'頂級療程消費者', desc:'他們不追求便宜，追求的是「值得」。你不需要打折，只需要說清楚為什麼值得這個價格。'}
+        ],
+        insight:'你的受眾是「研究型消費者」——在追蹤你之前就做過功課了。他們問的問題更精準，也更願意花時間 and 金錢在真正有效的方案上。你不需要說服他們，只需要給他們一個好理由。',
+        bars:[{l:'受眾信任度',p:92,c:'#D4C080'},{l:'高單價轉換',p:80,c:'#A05828'},{l:'觸及新受眾',p:52,c:'#8A9E88'}],
+        tips:[
+          {i:'🔬',t:'成分解析短影音',s:'拿著產品對鏡頭說：「這瓶為什麼值得？」30 秒說清楚一個成分的作用。不用完美，像在跟客人解說一樣錄下來就對了，收藏率極高。'},
+          {i:'📋',t:'髮質診斷影片系列',s:'「你是哪種髮質？」開頭丟問題，接著示範怎麼判斷，最後帶出對應解法。每支影片聚焦一種髮質，做成系列，讓受眾自動追更。'}
+        ],
+        products:[
+          {
+            name:'髮質修護療程組', tag:'高單價主力',
+            why:'你的受眾願意為有理有據的高單價產品付費，療程組搭配你的成分說明推薦，成交率最高。',
+            shoot:'施作療程時鏡頭對準手部操作，同步說明每個步驟的用途。30 秒說清楚「為什麼這個步驟不能省」，讓觀眾覺得「原來專業差這裡」。',
+            script:'「妳的髮質現在缺的是蛋白質結構，這組療程會幫妳從內部修補斷裂的角質層。不是表面感覺軟，而是真的強化髮絲。通常做完兩次會有明顯感覺，妳可以摸摸看彈性的差別。」'
+          },
+          {
+            name:'專業級護色髮品', tag:'好說故事',
+            why:'有科學依據的配方，你能說清楚為什麼值得，不需要打折就能成交。',
+            shoot:'用色票 or 比色卡呈現「有用 vs 沒用護色品」的顏色維持差異，搭配你的解說。視覺化的科學說明讓專業感立即提升，這種內容收藏率是一般貼文的 3 倍。',
+            script:'「一般護色洗髮精只是在頭髮表面形成薄膜，這款的分子結構可以滲透進角質層，從內鎖住色素分子。所以即使天天洗，顏色流失速度也比一般慢很多。我跟妳說為什麼值得這個價格⋯⋯」'
+          }
+        ]
+      },
+      trend:{
+        name:'話題流行型設計師', emoji:'🔥',
+        animalEmoji:'🐆', animalName:'追風獵豹', rarity: 22,
+        animalHashtags: ['#潮流探路先鋒', '#爆款製造機', '#流量密碼持有者'],
+        shortDesc: '永遠快半拍的潮流獵手，善用話題度與稀缺感引發爆發式預約。',
+        desc:'你的社群跟著趨勢走，吸引的是對流行敏感的追蹤者。你有打爆話題的潛力，受眾範圍廣，把流量轉成預約是你最重要的課題。',
+        audience:[
+          {icon:'🔥', title:'潮流第一線追隨者', desc:'他們不需要太多說服，只需要一個「現在就要做」的理由。稀缺感和時效性，是讓他們從追蹤者變成預約客人的關鍵。'},
+          {icon:'👀', title:'廣泛追蹤隨時比較', desc:'他們同時在看很多設計師，但不代表不忠誠——只要你持續出現在他們的動態，品牌記憶度就在累積。'},
+          {icon:'📲', title:'高頻率轉發分享者', desc:'看到喜歡的造型 or 話題，他們會主動分享給朋友。你的每一支爆紅影片，背後都有這群人在幫用擴散。'}
+        ],
+        insight:'你的受眾是「趨勢追隨者」——他們關注的不著你，而是整個流行美髮圈。你的優勢是觸及廣，但競爭也激烈。讓他們從「追蹤」到「預約」的關鍵，是製造緊迫感和獨特性。',
+        bars:[{l:'社群觸及率',p:88,c:'#E07030'},{l:'話題製造力',p:85,c:'#A05828'},{l:'受眾穩定度',p:50,c:'#8A9E88'}],
+        tips:[
+          {i:'🔥',t:'流行預測短影音',s:'比時事快半拍，對著鏡頭說：「下個月這個色會紅，原因是⋯⋯」15 秒說完，不用 B-roll，直接用你的臉和自信說話，建立預言者形象。'},
+          {i:'⏰',t:'限額開放影片',s:'「本月最後 3 個名額，這週五截止」——錄一支 10 秒的限額宣告影片，不需要剪輯，拍完直發。趨勢型受眾決策快，稀缺感是最強的驅動力。'}
+        ],
+        products:[
+          {
+            name:'專業級髮色專業品', tag:'話題連結強',
+            why:'跟流行色綁定，你可以用「配合最新流行色」的說法推薦，話題感強，容易在社群上帶動討論。',
+            shoot:'搭配當季最夯髮色的成品照或影片，結尾帶出「這個顏色能維持這麼久，靠的是這瓶」。語速快、節奏強，10–15 秒，讓人看完想轉發。',
+            script:'「今年最夯的奶茶棕，90% 的人一個月就退色了。原因不是染壞，是沒有搭配護色品。這款是我指定用的，搭配我做的色系，顏色可以比一般多撐 3 週。這週還有 2 個名額，要的私訊我。」'
+          },
+          {
+            name:'髮質頭皮修護精華', tag:'客單價提升',
+            why:'追求流行代表染燙頻率高，受損問題嚴重，修護精華是每次服務的自然附加，提升客單價。',
+            shoot:'拍「密集染燙後的頭髮 vs 做修護後的頭髮」對比，15 秒快剪，配上強節奏音樂。重點是「視覺反差」要夠大，讓人停住滑手指的動作。',
+            script:'「妳今年染了幾次？超過 3 次的話，妳的髮質已經在求救了。這款修護精華是我給每個高頻染燙客人的必備，不是保養品，是修復工程。妳現在做，比之後斷髮再補便宜多了。」'
+          }
+        ]
+      }
+    };
 
     function HolymakeApp() {
       const [page, setPage] = useState('intro');
@@ -78,12 +257,14 @@
       const [showToast, setShowToast] = useState(false);
       const [animating, setAnimating] = useState(false);
       
+      // QR Code 與 IG 截圖相關 State
       const [qrUrl, setQrUrl] = useState('');
       const [showIGModal, setShowIGModal] = useState(false);
       const [igImage, setIgImage] = useState('');
       const [isGenerating, setIsGenerating] = useState(false);
       const shareCardRef = useRef(null);
 
+      // 動態更新/生成本地 QR Code，避開外部網路跨域攔截
       const updateQrCode = () => {
         if (typeof QRious !== 'undefined') {
           const qr = new QRious({
@@ -97,6 +278,7 @@
         }
       };
 
+      // 每次切換頁面 (特別是進到 result) 時重整 QR Code
       useEffect(() => {
         updateQrCode();
       }, [page]);
@@ -121,7 +303,52 @@
         }, 300);
       };
 
-      // ...（pickAnswer, nextQ, prevQ, classify 等保持不變）
+      const pickAnswer = (index) => {
+        const newAnswers = [...answers];
+        const prevAns = newAnswers[cur];
+        const q = QS[cur];
+        const newScores = { ...scores };
+
+        if (prevAns !== undefined) {
+          Object.entries(q.opts[prevAns].d).forEach(([k, v]) => {
+            newScores[k] = (newScores[k] || 0) - v;
+          });
+        }
+
+        newAnswers[cur] = index;
+        Object.entries(q.opts[index].d).forEach(([k, v]) => {
+          newScores[k] = (newScores[k] || 0) + v;
+        });
+
+        setAnswers(newAnswers);
+        setScores(newScores);
+      };
+
+      const nextQ = () => {
+        if (answers[cur] === undefined) return;
+        if (cur < QS.length - 1) {
+          setCur(cur + 1);
+        } else {
+          switchPage('result');
+        }
+      };
+
+      const prevQ = () => {
+        if (cur > 0) setCur(cur - 1);
+      };
+
+      const classify = () => {
+        const sc = scores;
+        const keys = ['visual', 'warm', 'edu', 'trend', 'reach', 'booking', 'loyal', 'trust', 'story'];
+        const sorted = keys.filter(k => sc[k]).sort((a, b) => (sc[b] || 0) - (sc[a] || 0));
+        const top = sorted[0] || 'visual';
+
+        if (['visual', 'warm', 'edu', 'trend'].includes(top)) return top;
+        if (top === 'reach' || top === 'booking') return (sc.warm || 0) >= (sc.edu || 0) ? 'visual' : 'trend';
+        if (top === 'loyal' || top === 'story') return 'warm';
+        if (top === 'trust') return 'edu';
+        return 'visual';
+      };
 
       const triggerToast = (msg) => {
         setToastMsg(msg);
@@ -129,6 +356,7 @@
         setTimeout(() => setShowToast(false), 2800);
       };
 
+      // 複製連結機制
       const copyLink = () => {
         const tempInput = document.createElement('input');
         tempInput.value = window.location.href;
@@ -146,24 +374,26 @@
         document.title = prevTitle;
       };
 
-      // ✅ 已修復的 IG 截圖生成函式
+      // 產生高精度且高相容性的 IG 限時動態卡片
       const generateIGStory = async () => {
         if (!shareCardRef.current) return;
         setIsGenerating(true);
-        updateQrCode();
-
-        // 給 QR Code 一點渲染時間
-        await new Promise(resolve => setTimeout(resolve, 150));
-
+        updateQrCode(); // 生成前確保 QR Code 是最新生成的本地 base64
+        
         try {
           const canvas = await html2canvas(shareCardRef.current, {
-            scale: 2,
+            scale: 2, 
             useCORS: true,
             allowTaint: true,
             backgroundColor: '#FFF9E5',
-            logging: false
+            logging: false,
+            width: 480,
+            height: 853,
+            windowWidth: 480,
+            windowHeight: 853,
+            x: 0,
+            y: 0
           });
-
           const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
           setIgImage(dataUrl);
           setShowIGModal(true);
@@ -175,7 +405,488 @@
         }
       };
 
-      // ...（renderBrandBar, renderIntro, renderQuiz, renderResult 保持不變）
+      const renderBrandBar = () => (
+        <div className="flex flex-col items-center justify-center p-5 pb-3 relative z-10 no-print">
+          <div className="flex items-center justify-center gap-3 mb-1">
+            {/* 使用外部提供的 JPG Logo，加入 mix-blend-multiply 去除白底影響 */}
+            <img 
+              src="300PX.jpg" 
+              alt="RENATA Logo" 
+              className="h-[24px] md:h-[28px] object-contain mix-blend-multiply" 
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            <span className="text-[#db6014] font-light text-xl">×</span>
+            <div className="text-[1.5rem] leading-none tracking-tight pt-1">
+              <span className="font-serif italic font-bold text-[#db6014]">Holy</span>
+              <span className="font-sans font-bold text-[rgba(255,134,59,.82)]">make</span>
+            </div>
+          </div>
+          <span className="block text-center mt-1 text-[0.65rem] text-[#6B4423] tracking-[0.15em] font-medium opacity-80">
+            專屬社群與髮品銷售指南
+          </span>
+        </div>
+      );
+
+      const renderIntro = () => (
+        <div className={`container max-w-[560px] mx-auto px-5 pt-8 pb-20 transition-all duration-300 ${animating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+          <div className="text-center">
+            <div className="font-serif text-[1.65rem] md:text-3xl font-bold text-[#2C1A0A] tracking-wide mb-3 leading-snug">
+              美髮設計師社群人格分析
+            </div>
+            <div className="text-[0.75rem] text-[#db6014] mb-6 tracking-widest font-bold uppercase">
+              RENATA × Holymake 為你量身打造
+            </div>
+            <p className="text-[0.9375rem] text-[#6B4423] leading-relaxed mb-2">
+              6 道題，找出你的社群人格、你吸引的受眾類型，<br />以及最適合你客群的髮品推薦方向。
+            </p>
+            <p className="text-[0.8125rem] text-[#8A9E88] mb-7">⏱ 約 2 分鐘 &nbsp;·&nbsp; 6 題 &nbsp;·&nbsp; 3 個分析維度</p>
+            
+            <div className="flex gap-2 justify-center flex-wrap mb-8">
+              <span className="inline-block py-1 px-3 rounded-full text-xs font-medium bg-[#FBF0E8] text-[#A05828]">社群人格</span>
+              <span className="text-[0.8rem] text-[#8A9E88] self-center">→</span>
+              <span className="inline-block py-1 px-3 rounded-full text-xs font-medium bg-[#EBF0EA] text-[#4A6849]">吸引的觀眾類型</span>
+              <span className="text-[0.8rem] text-[#8A9E88] self-center">→</span>
+              <span className="inline-block py-1 px-3 rounded-full text-xs font-medium bg-[#F5F0E8] text-[#6B4423] border border-[#E8DDD0]">髮品推薦方向</span>
+            </div>
+            
+            <button 
+              onClick={startQuiz}
+              className="w-full p-[14px] text-base border-none rounded-lg bg-[#db6014] text-white font-medium cursor-pointer transition-all duration-150 hover:bg-[#A05828] active:scale-95"
+            >
+              開始分析
+            </button>
+            
+            <p className="text-xs text-[#8A9E88] mt-6 font-medium tracking-wide">
+              Powered by <strong className="text-[#6B4423]">RENATA</strong> × Holymake
+            </p>
+          </div>
+        </div>
+      );
+
+      const renderQuiz = () => {
+        const q = QS[cur];
+        const L = ['A', 'B', 'C', 'D'];
+        const isLast = cur === QS.length - 1;
+
+        return (
+          <div className={`container max-w-[560px] mx-auto px-5 pt-10 pb-20 transition-all duration-300 ${animating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+            <div className="mb-8">
+              <div className="flex gap-1.5 mb-2">
+                {PHASES.map((_, i) => (
+                  <div key={i} className={`h-0.5 flex-1 rounded transition-colors duration-400 ${i < q.phase ? 'bg-[#db6014]' : i === q.phase ? 'bg-[#ff863b]' : 'bg-[#E8DDD0]'}`}></div>
+                ))}
+              </div>
+              <div className="text-[0.6875rem] text-[#A05828] tracking-wider uppercase">
+                {PHASES[q.phase]} · 第 {cur + 1} 題 / {QS.length}
+              </div>
+            </div>
+
+            <div className="text-[0.6875rem] text-[#db6014] tracking-[0.1em] uppercase mb-2 font-medium">
+              {PHASES[q.phase]}
+            </div>
+            <div className="font-serif text-[1.1875rem] md:text-[1.25rem] leading-relaxed text-[#2C1A0A] mb-7">
+              {q.text}
+            </div>
+
+            <div className="flex flex-col gap-2.5">
+              {q.opts.map((o, i) => {
+                const isSel = answers[cur] === i;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => pickAnswer(i)}
+                    className={`flex items-start gap-3 p-[13px_16px] border rounded-[14px] text-left cursor-pointer transition-all duration-150 active:scale-[0.98]
+                      ${isSel ? 'border-[#db6014] bg-[#FBF0E8]' : 'border-[#E8DDD0] bg-white hover:border-[#db6014] hover:bg-[#FBF0E8]'}
+                    `}
+                  >
+                    <span className="text-[0.6875rem] font-medium text-[#8A9E88] min-w-[18px] pt-[3px] tracking-wide">{L[i]}</span>
+                    <span className="text-[0.9375rem] text-[#2C1A0A] leading-snug">{o.t}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-between items-center mt-6">
+              <button 
+                onClick={prevQ} 
+                disabled={cur === 0}
+                className="px-5 py-2.5 border border-[#E8DDD0] rounded-lg bg-transparent text-[0.875rem] text-[#6B4423] transition-all hover:bg-[#F5F0E8] hover:border-[#db6014] disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                ← 上一題
+              </button>
+              <span className="text-[0.8125rem] text-[#8A9E88]">{cur + 1} / {QS.length}</span>
+              <button 
+                onClick={nextQ} 
+                disabled={answers[cur] === undefined}
+                className="px-6 py-2.5 border-none rounded-lg bg-[#db6014] text-white text-[0.9375rem] font-medium transition-all hover:bg-[#A05828] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {isLast ? '查看報告 →' : '下一題 →'}
+              </button>
+            </div>
+          </div>
+        );
+      };
+
+      const renderResult = () => {
+        const pk = classify();
+        const p = PERSONAS[pk];
+
+        const AnimatedBar = ({ label, percentage, color }) => {
+          const [width, setWidth] = useState(0);
+          useEffect(() => {
+            const timer = setTimeout(() => setWidth(percentage), 150);
+            return () => clearTimeout(timer);
+          }, [percentage]);
+
+          return (
+            <div className="mb-[13px]">
+              <div className="flex justify-between text-[0.8125rem] text-[#6B4423] mb-1">
+                <span>{label}</span><span>{percentage}%</span>
+              </div>
+              <div className="h-1 bg-[#E8DDD0] rounded-full overflow-hidden">
+                <div 
+                  className="h-full rounded-full transition-all duration-1000 ease-out print:!bg-current"
+                  style={{ width: `${width}%`, backgroundColor: color, color: color }}
+                />
+              </div>
+            </div>
+          );
+        };
+
+        return (
+          <div className={`container max-w-[560px] mx-auto px-5 pt-10 pb-20 transition-all duration-300 ${animating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'} print:p-4 print:max-w-full`}>
+            
+            {/* 📸 直接顯示在報告最上方的 TFT 圖鑑風格 IG 卡片 (不再隱藏，增加極強的視覺感與下載成功率) */}
+            <div className="w-full bg-[#FFF9E5] rounded-3xl p-6 mb-4 border border-[#F0E6D2] relative overflow-hidden font-sans shadow-md print:hidden">
+              {/* 背景微紋理 */}
+              <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'300\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.75\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'300\' height=\'300\' filter=\'url(%23n)\'/%3E%3C/svg%3E")' }}></div>
+              
+              {/* 頂端小標 */}
+              <div className="flex items-center justify-between gap-3 mb-5 relative z-10 border-b border-[#F0E6D2]/60 pb-3">
+                <div className="flex flex-col">
+                  <span className="text-[0.65rem] text-[#6B4423] tracking-[0.1em] font-bold">RENATA × Holymake</span>
+                  <span className="text-[0.55rem] text-[#8A9E88] tracking-widest font-bold">美髮設計師社群人格分析</span>
+                </div>
+                <span className="text-[0.55rem] font-bold text-[#db6014] tracking-widest uppercase bg-white/80 border border-[#E8DDD0] px-2.5 py-0.5 rounded-full">
+                  約前 {p.rarity}% 的稀有物種
+                </span>
+              </div>
+
+              {/* 動物特寫 */}
+              <div className="flex items-center gap-4 relative z-10 mb-4">
+                <div className="w-[85px] h-[85px] bg-[#2C1A0A] flex items-center justify-center text-[3.2rem] shadow-[2px_3px_0px_rgba(0,0,0,0.15)] shrink-0" style={{ borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' }}>
+                  {p.animalEmoji}
+                </div>
+                <div>
+                  <div className="text-[0.75rem] font-bold text-[#6B4423] mb-1">你的社群人格顯示為 ...</div>
+                  <div className="font-serif text-[1.85rem] font-black text-[#2C1A0A] leading-none mb-2">
+                    {p.animalName}
+                  </div>
+                  <div className="flex gap-1 flex-wrap">
+                    {p.animalHashtags.map((h, i) => (
+                      <span key={i} className="text-[0.6rem] font-bold text-[#8A9E88] bg-white px-1.5 py-0.5 rounded-md border border-[#E8DDD0]/50">{h}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 剪貼紙卡片說明 */}
+              <div className="bg-white rounded-2xl p-4 border border-[#F0E6D2] relative z-10 text-[0.825rem] text-[#6B4423] leading-relaxed mb-4 shadow-sm">
+                <div className="text-center font-bold text-[#2C1A0A] mb-1.5 text-[0.875rem]">
+                  世界上約有 <span className="text-[#4A6849] font-black">{p.rarity}%</span> 的人和你一樣！
+                </div>
+                <p className="text-justify">{p.shortDesc}</p>
+              </div>
+
+              {/* 受眾並列列 */}
+              <div className="flex gap-2 relative z-10 bg-[#FFFDF7]/80 rounded-xl p-2.5 border border-[#F0E6D2]/40 items-center">
+                <div className="flex-[1.2] text-center border-r border-[#E8DDD0] pr-1">
+                  <div className="text-[0.55rem] text-[#8A9E88] font-bold mb-1">容易吸引到的人</div>
+                  <div className="flex justify-center gap-1.5">
+                    {p.audience.map((a, i) => (
+                      <span key={i} title={a.title} className="text-[1.1rem]">{a.icon}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex-1 text-center flex flex-col justify-center pl-1">
+                  <span className="text-[0.55rem] text-[#6B4423] font-bold leading-tight">長按此卡片儲存 ➔ 掃碼條碼</span>
+                  <span className="text-[0.5rem] text-[#8A9E88] mt-0.5">直接發發看 IG 限動吧！</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 📸 儲存為高畫質 9:16 卡片下載按鈕 */}
+            <div className="mb-8 print:hidden">
+              <button
+                onClick={generateIGStory}
+                disabled={isGenerating}
+                className="w-full py-4 border-none rounded-xl bg-gradient-to-r from-[#db6014] to-[#ff863b] text-white text-[1.05rem] font-bold cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(219,96,20,0.3)] transition-transform active:scale-95 disabled:opacity-70"
+              >
+                <span className="text-[1.3rem]">📸</span> {isGenerating ? '正在產生專屬卡片...' : '儲存此圖片，分享到 IG 限時動態'}
+              </button>
+            </div>
+
+            {/* 隱藏的 1px 裁剪實體渲染區：高精度且高相容性輸出 9:16 IG 限動長圖 */}
+            <div className="render-container" aria-hidden="true">
+              <div ref={shareCardRef} className="w-[480px] h-[853px] bg-[#FFF9E5] flex flex-col items-center relative box-border overflow-hidden font-sans p-6 pt-12">
+                
+                {/* 背景紙張雜訊質感 */}
+                <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'300\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.75\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'300\' height=\'300\' filter=\'url(%23n)\'/%3E%3C/svg%3E")' }}></div>
+
+                {/* 頂部：動物圖像與標題 */}
+                <div className="flex w-full items-center justify-center gap-5 mb-6 relative z-10 px-2">
+                  {/* 動物圖騰 (不規則 Blob 形狀) */}
+                  <div className="w-[140px] h-[140px] bg-[#2C1A0A] flex items-center justify-center text-[5.5rem] shadow-[4px_6px_0px_rgba(0,0,0,0.15)] relative shrink-0" style={{ borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' }}>
+                    {p.animalEmoji}
+                    <div className="absolute -bottom-1 -right-2 text-4xl opacity-80">✨</div>
+                  </div>
+                  
+                  <div className="flex flex-col flex-1 mt-2">
+                    <div className="text-[0.85rem] font-bold text-[#6B4423] mb-2 tracking-wider">你的社群人格顯示為 ...</div>
+                    
+                    <div className="relative inline-block mb-3">
+                       <div className="absolute bottom-1 left-[-5px] w-[105%] h-[20px] bg-white z-0 rounded-full rotate-[-2deg]"></div>
+                       <div className="font-serif text-[2.8rem] font-black text-[#2C1A0A] leading-none relative z-10 whitespace-nowrap">
+                         {p.animalName}
+                       </div>
+                    </div>
+                    
+                    <div className="text-[0.75rem] font-bold text-[#8A9E88] tracking-widest whitespace-nowrap">
+                      {p.animalHashtags.join(' ')}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 中間：紙張文字卡片區塊 */}
+                <div className="w-[96%] bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative z-10 flex flex-col p-8 pb-10 mt-2 border border-[#F0E6D2]">
+                  
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-4 opacity-20">
+                     {[...Array(7)].map((_, i) => <div key={i} className="w-2.5 h-2.5 rounded-full bg-[#db6014]"></div>)}
+                  </div>
+
+                  <div className="text-center text-[1.1rem] font-bold text-[#2C1A0A] mt-6 mb-5">
+                    世界上約有 <span className="text-[2.2rem] text-[#4A6849] mx-1 font-black">{p.rarity}%</span> 的人和你一樣！
+                  </div>
+
+                  <div className="text-[0.95rem] text-[#6B4423] leading-[1.8] mb-6 text-justify">
+                    {p.desc}
+                  </div>
+
+                  <div className="w-full border-t-[2px] border-dashed border-[#E8DDD0] my-4 relative">
+                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-4 text-[#8A9E88] text-[0.85rem] font-bold tracking-widest whitespace-nowrap">
+                        容易吸引到這三種人
+                     </div>
+                  </div>
+
+                  <div className="flex justify-between items-start gap-3 mt-5">
+                    {p.audience.map((a, i) => (
+                      <div key={i} className="flex flex-col items-center flex-1">
+                        <div className="w-[65px] h-[65px] bg-[#FFF9E5] rounded-full flex items-center justify-center text-[2.2rem] mb-2 shadow-sm border border-[#F0E6D2]">
+                           {a.icon}
+                        </div>
+                        <div className="text-[0.75rem] font-bold text-[#2C1A0A] text-center leading-[1.4] break-words w-full px-1">
+                           {a.title}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 底部品牌與條碼 */}
+                <div className="absolute bottom-0 left-0 w-full px-8 py-7 flex justify-between items-center z-10">
+                   <div className="flex flex-col">
+                      <div className="text-[1.2rem] font-black text-[#db6014] tracking-wider leading-none">RENATA</div>
+                      <div className="text-[0.7rem] font-bold text-[#6B4423] tracking-[0.1em] mt-1">× Holymake</div>
+                   </div>
+                   <div className="flex items-center gap-4">
+                      <div className="text-right hidden sm:flex flex-col items-end">
+                         <span className="text-[0.75rem] font-bold text-[#2C1A0A] tracking-wider">
+                            長按截圖 ➔ 掃描條碼
+                         </span>
+                         <span className="text-[0.65rem] text-[#8A9E88] mt-0.5">找到你的靈魂隊友</span>
+                      </div>
+                      {/* 渲染本地生成的二維碼 Base64 */}
+                      <div className="w-[70px] h-[70px] bg-white p-1.5 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-[#E8DDD0] flex items-center justify-center shrink-0">
+                         {qrUrl ? (
+                           <img src={qrUrl} alt="Local QR Code" className="w-full h-full object-contain" />
+                         ) : (
+                           <div className="w-full h-full bg-[#FAF8F4]" />
+                         )}
+                      </div>
+                   </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* 精美的分析報告本文段落 */}
+            <div className="bg-white rounded-[14px] p-6 mb-6 border border-[#E8DDD0]">
+              <div className="text-[0.875rem] font-medium text-[#2C1A0A] mb-1.5">人格優勢綜述</div>
+              <p className="text-[0.9rem] text-[#6B4423] leading-relaxed text-justify">{p.desc}</p>
+            </div>
+
+            {/* 人格維度 */}
+            <div className="font-serif text-[1.35rem] md:text-[1.5rem] font-bold text-[#2C1A0A] border-l-[6px] border-[#db6014] pl-4 py-1.5 mb-5 bg-gradient-to-r from-[#FBF0E8] to-transparent">
+              人格維度分析
+            </div>
+            {p.bars.map((b, i) => (
+              <AnimatedBar key={i} label={b.l} percentage={b.p} color={b.c} />
+            ))}
+
+            <hr className="border-t border-[#E8DDD0] my-6" />
+
+            {/* 觀眾類型 */}
+            <div className="font-serif text-[1.35rem] md:text-[1.5rem] font-bold text-[#2C1A0A] border-l-[6px] border-[#db6014] pl-4 py-1.5 mb-5 bg-gradient-to-r from-[#FBF0E8] to-transparent">
+              你吸引的觀眾類型
+            </div>
+            <div className="flex flex-col gap-2.5 mb-5 md:grid md:grid-cols-2">
+              {p.audience.map((a, i) => (
+                <div key={i} className={`bg-white border border-[#E8DDD0] rounded-lg p-3.5 flex gap-3 items-start ${i === 2 ? 'md:col-span-2' : ''}`}>
+                  <div className="text-xl min-w-[24px] pt-px">{a.icon}</div>
+                  <div>
+                    <div className="text-[0.875rem] font-medium text-[#2C1A0A] mb-1">{a.title}</div>
+                    <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed">{a.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-white border border-[#E8DDD0] rounded-[14px] p-4 mb-5">
+              <div className="text-[0.875rem] font-medium text-[#2C1A0A] mb-1">受眾洞察</div>
+              <div className="text-[0.875rem] text-[#6B4423] leading-relaxed">{p.insight}</div>
+            </div>
+
+            <hr className="border-t border-[#E8DDD0] my-6" />
+
+            {/* 內容策略建議 */}
+            <div className="font-serif text-[1.35rem] md:text-[1.5rem] font-bold text-[#2C1A0A] border-l-[6px] border-[#db6014] pl-4 py-1.5 mb-5 bg-gradient-to-r from-[#FBF0E8] to-transparent">
+              內容策略建議
+            </div>
+            <div className="bg-white border border-[#E8DDD0] rounded-[14px] px-5 py-2 mb-5">
+              {p.tips.map((t, i) => (
+                <div key={i} className="flex gap-3 items-start py-3 border-b border-[#E8DDD0] last:border-b-0">
+                  <div className="text-lg min-w-[26px]">{t.i}</div>
+                  <div>
+                    <div className="text-[0.875rem] font-medium text-[#2C1A0A] mb-1">{t.t}</div>
+                    <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed">{t.s}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <hr className="border-t border-[#E8DDD0] my-6 print:hidden" />
+
+            {/* 髮品推薦區塊 */}
+            <div className="font-serif text-[1.35rem] md:text-[1.5rem] font-bold text-[#2C1A0A] border-l-[6px] border-[#db6014] pl-4 py-1.5 mb-5 bg-gradient-to-r from-[#FBF0E8] to-transparent print:hidden">
+              為你的受眾推薦的髮品
+            </div>
+            <p className="text-[0.875rem] text-[#6B4423] leading-relaxed mb-4 print:hidden">
+              根據你的受眾類型，這些是最容易在你的客群中產生共鳴、推薦成交率高的品項：
+            </p>
+            
+            <div className="print:hidden">
+              {p.products.map((pr, i) => (
+                <div key={i} className={`bg-white border rounded-[14px] p-4 mb-2.5 ${i === 0 ? 'border-[1.5px] border-[#db6014]' : 'border-[#E8DDD0]'}`}>
+                  {i === 0 && <div className="text-[0.6875rem] font-medium text-[#db6014] mb-2 tracking-wider">★ 最高轉換率推薦</div>}
+                  
+                  <div className="flex justify-between items-start gap-2 mb-1.5">
+                    <div className="text-[0.9375rem] font-medium text-[#2C1A0A]">{pr.name}</div>
+                    <span className="inline-block py-1 px-2.5 rounded-full text-xs font-medium bg-[#FBF0E8] text-[#A05828] whitespace-nowrap shrink-0">
+                      {pr.tag}
+                    </span>
+                  </div>
+                  
+                  <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed mb-2.5">
+                    <strong className="text-[0.75rem] text-[#8A9E88] tracking-wider uppercase block mb-0.5">為什麼適合你的客人：</strong>
+                    {pr.why}
+                  </div>
+                  
+                  <div className="bg-[#FAF8F4] rounded-lg p-3 mb-2">
+                    <div className="text-[0.6875rem] font-medium tracking-wider uppercase text-[#8A9E88] mb-1">📸 拍攝建議</div>
+                    <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed whitespace-pre-wrap">{pr.shoot}</div>
+                  </div>
+                  
+                  <div className="bg-[#FAF8F4] rounded-lg p-3 mb-3">
+                    <div className="text-[0.6875rem] font-medium tracking-wider uppercase text-[#8A9E88] mb-1">💬 推薦話術</div>
+                    <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed whitespace-pre-wrap">{pr.script}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <hr className="border-t border-[#E8DDD0] my-6 print:hidden" />
+
+            <div className="font-serif text-[1.35rem] md:text-[1.5rem] font-bold text-[#2C1A0A] border-l-[6px] border-[#db6014] pl-4 py-1.5 mb-5 bg-gradient-to-r from-[#FBF0E8] to-transparent print:hidden">
+              你可以和業務討論的 3 件事
+            </div>
+            <div className="flex flex-col gap-2.5 mb-2 print:hidden">
+              {[
+                { t: '你的客群最容易接受哪一類髮品？', d: '先不要全品項進貨，從最容易被你的受眾理解的品項開始。' },
+                { t: '這個品項要怎麼搭配服務銷售？', d: '例如染後護色、燙後修護、頭皮保養、居家維持。' },
+                { t: '這個品項要怎麼拍成內容？', d: '不只是賣產品，而是讓客人看懂：「我為什麼需要它？」' }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-3.5 items-start bg-white border border-[#E8DDD0] rounded-[14px] p-4">
+                  <div className="w-7 h-7 rounded-full bg-[#db6014] text-white text-[0.875rem] font-medium flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </div>
+                  <div>
+                    <div className="text-[0.9375rem] font-medium text-[#2C1A0A] mb-1">{item.t}</div>
+                    <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed">{item.d}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <hr className="border-t border-[#E8DDD0] my-6 print:hidden" />
+
+            {/* CTA Blocks (傳給業務) */}
+            <div className="bg-[#2C1A0A] rounded-[14px] p-6 mt-3 relative overflow-hidden print:hidden">
+              <div className="absolute w-[200px] h-[200px] top-[-80px] right-[-40px] pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(219,96,20,.2), transparent 70%)' }}></div>
+              
+              <div className="font-serif text-[1.25rem] font-bold text-white leading-snug mb-3 relative z-10 text-center">
+                想把這份結果變成實際銷售內容？
+              </div>
+              <div className="text-[0.875rem] text-[#E8DDD0] leading-relaxed mb-6 relative z-10 text-justify md:text-center">
+                你可以先和業務討論適合的髮品組合，再由吼莉協助規劃社群內容與短影音拍攝，讓產品不只是被介紹，而是被客人看懂、被需要。
+              </div>
+              
+              <div className="flex flex-col gap-3 relative z-10">
+                <button 
+                  onClick={saveAsPDF}
+                  className="w-full py-3.5 border border-[#db6014] rounded-lg bg-[#db6014] text-[0.9375rem] font-medium text-white cursor-pointer flex items-center justify-center gap-2 transition-all hover:bg-[#A05828] no-print"
+                >
+                  <span className="text-[1.1rem]">📄</span> 儲存報告，並傳給 RENATA 業務
+                </button>
+              </div>
+            </div>
+
+            {/* 推廣與複製連結 */}
+            <div className="mt-8 mb-2 print:hidden text-center">
+              <div className="text-[1.05rem] font-bold text-[#2C1A0A] mb-1">喜歡這份分析嗎？</div>
+              <div className="text-[0.875rem] text-[#6B4423] mb-4">分享給你的朋友，讓他們也測測看吧！</div>
+              <button 
+                onClick={copyLink}
+                className="w-full py-4 border-2 border-[#db6014] rounded-xl bg-[#FBF0E8] text-[#db6014] text-[1.05rem] font-bold cursor-pointer flex items-center justify-center gap-2 transition-all hover:bg-[#db6014] hover:text-white"
+              >
+                <span className="text-[1.2rem]">🔗</span> 複製測驗連結，分享給朋友
+              </button>
+            </div>
+
+            {/* Footer & Restart */}
+            <div className="text-center mt-6 print:hidden">
+              <p className="text-xs text-[#8A9E88] mb-2 font-medium tracking-wide">
+                Powered by <strong className="text-[#6B4423]">RENATA</strong> × Holymake
+              </p>
+            </div>
+            <button 
+              onClick={startQuiz}
+              className="w-full py-3 border border-[#E8DDD0] rounded-lg bg-transparent text-[0.875rem] text-[#6B4423] cursor-pointer mt-3 transition-all hover:bg-[#F5F0E8] hover:border-[#db6014] hover:text-[#A05828] no-print"
+            >
+              ↺ 重新分析
+            </button>
+          </div>
+        );
+      };
 
       return (
         <div className="relative z-10 min-h-screen pb-10">
@@ -183,22 +894,31 @@
           {page === 'intro' && renderIntro()}
           {page === 'quiz' && renderQuiz()}
           {page === 'result' && renderResult()}
-
-          <div className={`fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#2C1A0A] text-white px-6 py-3 rounded-full text-[0.9375rem] font-medium shadow-xl z-[999] pointer-events-none whitespace-nowrap transition-transform duration-300 ${showToast ? 'translate-y-0' : 'translate-y-[100px]'}`}>
+          
+          {/* Toast 通知 */}
+          <div 
+            className={`fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#2C1A0A] text-white px-6 py-3 rounded-full text-[0.9375rem] font-medium shadow-xl z-[999] pointer-events-none whitespace-nowrap transition-transform duration-300 ${showToast ? 'translate-y-0' : 'translate-y-[100px]'}`}
+          >
             {toastMsg}
           </div>
 
+          {/* IG 截圖預覽 Modal */}
           {showIGModal && (
-            <div className="fixed inset-0 bg-black/85 z-[99999] flex flex-col items-center justify-center p-6">
-              <div className="w-full max-w-[360px] relative">
-                <button onClick={() => setShowIGModal(false)} className="absolute -top-12 right-0 text-white text-4xl opacity-80 hover:opacity-100">&times;</button>
-                <div className="text-white text-center text-[0.9375rem] font-bold mb-4 tracking-widest bg-black/50 py-2 rounded-full border border-white/20">
-                  ✨ 長按下方圖片即可儲存 / 分享 ✨
-                </div>
-                <img src={igImage} alt="IG Share Card" className="w-full h-auto rounded-2xl shadow-2xl border-4 border-white" />
-                <div className="mt-5 text-center text-white/60 text-xs">
-                  儲存後就可以到 IG 限時動態發佈囉！
-                </div>
+            <div className="fixed inset-0 bg-black/85 z-[99999] flex flex-col items-center justify-center p-6 opacity-100 transition-opacity">
+              <div className="w-full max-w-[360px] relative animate-[fadeUp_0.3s_ease-out]">
+                 <button 
+                   onClick={() => setShowIGModal(false)} 
+                   className="absolute -top-12 right-0 text-white text-4xl opacity-80 hover:opacity-100"
+                 >
+                   &times;
+                 </button>
+                 <div className="text-white text-center text-[0.9375rem] font-bold mb-4 tracking-widest animate-[fadeUp_1s_alternate] bg-black/50 py-2 rounded-full backdrop-blur-sm border border-white/20">
+                   👉 長按下方圖片即可儲存 / 分享 👈
+                 </div>
+                 <img src={igImage} alt="IG Share Card" className="w-full h-auto rounded-2xl shadow-2xl border-4 border-white" />
+                 <div className="mt-5 text-center text-white/60 text-xs">
+                   儲存後就可以到 IG 限時動態發佈囉！
+                 </div>
               </div>
             </div>
           )}
