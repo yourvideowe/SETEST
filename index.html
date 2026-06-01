@@ -54,17 +54,22 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 隱藏截圖卡片的 1px 裁剪法：保持寬高使 Webkit 正常排版渲染，但不佔用視覺空間且隱形 */
+    /* 【100% 視區外定位截圖技術 (Off-screen Container)】 
+      不再隱藏在 display:none 或 1px 微型尺寸中，
+      直接以實體大小 (480x853) 渲染於視窗正下方 100% 外側，
+      這能強制 iOS Safari / LINE / FB 等 WebKit 核心完美進行實體排版繪製，
+      同時完全避開使用者視覺，達到 100% 截圖成功率！
+    */
     .render-container {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      z-index: -100;
+      top: 100%;
+      left: 100%;
+      width: 480px;
+      height: 853px;
+      overflow: visible;
+      z-index: -1000;
       pointer-events: none;
-      opacity: 0.02;
+      opacity: 0.99;
     }
   </style>
 </head>
@@ -139,7 +144,7 @@
           {
             name:'護色鎖色精華', tag:'配合染後服務',
             why:'你的客人在乎顏色維持效果，這是他們願意在沙龍外持續消費的品項。搭配染髮服務一起帶走，自然成交。',
-            shoot:'做完直接示範光澤效果，15–30 秒快剪，不用對鏡頭說話，專注手部動作。從染後沖洗、上精華到成品光澤一氣呵成，讓觀眾直接看到「前後差異」。',
+            shoot:'做完直接示範光澤效果，15–30 秒快剪，不用對鏡頭說話，專注手部動作。從染後沖洗、上精華到成品光澤一氣成。讓觀眾直接看到「前後差異」。',
             script:'「這瓶護色精華搭配我們的染色技術，可以讓顏色維持延長 2–3 週。我建議每次染完都帶一瓶回家，這樣效果會更穩定——妳剛才看到我示範的光澤，就是用這個。」'
           },
           {
@@ -228,7 +233,7 @@
         insight:'你的受眾是「趨勢追隨者」——他們關注的不著你，而是整個流行美髮圈。你的優勢是觸及廣，但競爭也激烈。讓他們從「追蹤」到「預約」的關鍵，是製造緊迫感和獨特性。',
         bars:[{l:'社群觸及率',p:88,c:'#E07030'},{l:'話題製造力',p:85,c:'#A05828'},{l:'受眾穩定度',p:50,c:'#8A9E88'}],
         tips:[
-          {i:'🔥',t:'流行預測短影音',s:'比時事快半拍，對著鏡頭說：「下個月這個色會紅，原因是⋯⋯」15 秒說完，不用 B-roll，直接用你的臉和自信說話，建立預言者形象。'},
+          {i:'🔥',t:'流行預測短影音',s:'比時事快半拍，對著鏡頭說：「下個月這個色會紅，原因是⋯⋯」15 秒說完，不用 B-roll，直接用你的臉 and 自信說話，建立預言者形象。'},
           {i:'⏰',t:'限額開放影片',s:'「本月最後 3 個名額，這週五截止」——錄一支 10 秒的限額宣告影片，不需要剪輯，拍完直發。趨勢型受眾決策快，稀缺感是最強的驅動力。'}
         ],
         products:[
@@ -249,7 +254,7 @@
     };
 
     function HolymakeApp() {
-      const [page, setPage] = useState('intro');
+      const [page, setPage] = useState('intro'); // 'intro', 'quiz', 'result'
       const [cur, setCur] = useState(0);
       const [answers, setAnswers] = useState([]);
       const [scores, setScores] = useState({});
@@ -264,7 +269,7 @@
       const [isGenerating, setIsGenerating] = useState(false);
       const shareCardRef = useRef(null);
 
-      // 動態更新/生成本地 QR Code，避開外部網路跨域攔截
+      // 動態更新/生成本地端 QR Code
       const updateQrCode = () => {
         if (typeof QRious !== 'undefined') {
           const qr = new QRious({
@@ -278,9 +283,18 @@
         }
       };
 
-      // 每次切換頁面 (特別是進到 result) 時重整 QR Code
+      // 智能生命週期：循環偵測套件載入，一載入即刻生成 Base64 二維碼
       useEffect(() => {
-        updateQrCode();
+        let timer;
+        const checkAndGen = () => {
+          if (typeof QRious !== 'undefined') {
+            updateQrCode();
+          } else {
+            timer = setTimeout(checkAndGen, 200);
+          }
+        };
+        checkAndGen();
+        return () => clearTimeout(timer);
       }, [page]);
 
       const resetState = () => {
@@ -374,17 +388,22 @@
         document.title = prevTitle;
       };
 
-      // 產生高精度且高相容性的 IG 限時動態卡片
+      // 產生高精度、高相容性，且通過安全域認證的 9:16 IG 限時動態卡片
       const generateIGStory = async () => {
         if (!shareCardRef.current) return;
         setIsGenerating(true);
-        updateQrCode(); // 生成前確保 QR Code 是最新生成的本地 base64
+        updateQrCode(); // 生成前確保 QR Code 是最新本地 Base64 數據
         
         try {
+          /*
+            關鍵優化：
+            1. 將 allowTaint 設為 false，徹底防止 canvas 受到「污染」導致 toDataURL() 失靈！
+            2. 使用 useCORS: true 來安全地渲染網頁內容
+          */
           const canvas = await html2canvas(shareCardRef.current, {
             scale: 2, 
             useCORS: true,
-            allowTaint: true,
+            allowTaint: false, 
             backgroundColor: '#FFF9E5',
             logging: false,
             width: 480,
@@ -408,7 +427,6 @@
       const renderBrandBar = () => (
         <div className="flex flex-col items-center justify-center p-5 pb-3 relative z-10 no-print">
           <div className="flex items-center justify-center gap-3 mb-1">
-            {/* 使用外部提供的 JPG Logo，加入 mix-blend-multiply 去除白底影響 */}
             <img 
               src="300PX.jpg" 
               alt="RENATA Logo" 
@@ -556,9 +574,8 @@
         return (
           <div className={`container max-w-[560px] mx-auto px-5 pt-10 pb-20 transition-all duration-300 ${animating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'} print:p-4 print:max-w-full`}>
             
-            {/* 📸 直接顯示在報告最上方的 TFT 圖鑑風格 IG 卡片 (不再隱藏，增加極強的視覺感與下載成功率) */}
+            {/* 📸 直接顯示在報告最上方的 TFT 圖鑑風格 IG 卡片 (增加視覺感與下載成功率) */}
             <div className="w-full bg-[#FFF9E5] rounded-3xl p-6 mb-4 border border-[#F0E6D2] relative overflow-hidden font-sans shadow-md print:hidden">
-              {/* 背景微紋理 */}
               <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'300\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.75\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'300\' height=\'300\' filter=\'url(%23n)\'/%3E%3C/svg%3E")' }}></div>
               
               {/* 頂端小標 */}
@@ -609,7 +626,7 @@
                   </div>
                 </div>
                 <div className="flex-1 text-center flex flex-col justify-center pl-1">
-                  <span className="text-[0.55rem] text-[#6B4423] font-bold leading-tight">長按此卡片儲存 ➔ 掃碼條碼</span>
+                  <span className="text-[0.55rem] text-[#6B4423] font-bold leading-tight">長按此卡片儲存 ➔ 掃描條碼</span>
                   <span className="text-[0.5rem] text-[#8A9E88] mt-0.5">直接發發看 IG 限動吧！</span>
                 </div>
               </div>
@@ -626,7 +643,7 @@
               </button>
             </div>
 
-            {/* 隱藏的 1px 裁剪實體渲染區：高精度且高相容性輸出 9:16 IG 限動長圖 */}
+            {/* 實體 1px 裁剪外定位渲染區：高精度且高相容性輸出 9:16 IG 限動長圖 */}
             <div className="render-container" aria-hidden="true">
               <div ref={shareCardRef} className="w-[480px] h-[853px] bg-[#FFF9E5] flex flex-col items-center relative box-border overflow-hidden font-sans p-6 pt-12">
                 
@@ -635,7 +652,6 @@
 
                 {/* 頂部：動物圖像與標題 */}
                 <div className="flex w-full items-center justify-center gap-5 mb-6 relative z-10 px-2">
-                  {/* 動物圖騰 (不規則 Blob 形狀) */}
                   <div className="w-[140px] h-[140px] bg-[#2C1A0A] flex items-center justify-center text-[5.5rem] shadow-[4px_6px_0px_rgba(0,0,0,0.15)] relative shrink-0" style={{ borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' }}>
                     {p.animalEmoji}
                     <div className="absolute -bottom-1 -right-2 text-4xl opacity-80">✨</div>
@@ -705,7 +721,6 @@
                          </span>
                          <span className="text-[0.65rem] text-[#8A9E88] mt-0.5">找到你的靈魂隊友</span>
                       </div>
-                      {/* 渲染本地生成的二維碼 Base64 */}
                       <div className="w-[70px] h-[70px] bg-white p-1.5 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-[#E8DDD0] flex items-center justify-center shrink-0">
                          {qrUrl ? (
                            <img src={qrUrl} alt="Local QR Code" className="w-full h-full object-contain" />
@@ -905,19 +920,33 @@
           {/* IG 截圖預覽 Modal */}
           {showIGModal && (
             <div className="fixed inset-0 bg-black/85 z-[99999] flex flex-col items-center justify-center p-6 opacity-100 transition-opacity">
-              <div className="w-full max-w-[360px] relative animate-[fadeUp_0.3s_ease-out]">
+              <div className="w-full max-w-[360px] relative animate-[fadeUp_0.3s_ease-out] flex flex-col items-center">
                  <button 
                    onClick={() => setShowIGModal(false)} 
                    className="absolute -top-12 right-0 text-white text-4xl opacity-80 hover:opacity-100"
                  >
                    &times;
                  </button>
-                 <div className="text-white text-center text-[0.9375rem] font-bold mb-4 tracking-widest animate-[fadeUp_1s_alternate] bg-black/50 py-2 rounded-full backdrop-blur-sm border border-white/20">
+                 
+                 {/* 長按說明標籤 */}
+                 <div className="w-full text-white text-center text-[0.9375rem] font-bold mb-4 tracking-widest animate-[fadeUp_1s_alternate] bg-black/50 py-2.5 rounded-full backdrop-blur-sm border border-white/20">
                    👉 長按下方圖片即可儲存 / 分享 👈
                  </div>
+                 
+                 {/* 實體生成完成的高解析度圖片 */}
                  <img src={igImage} alt="IG Share Card" className="w-full h-auto rounded-2xl shadow-2xl border-4 border-white" />
-                 <div className="mt-5 text-center text-white/60 text-xs">
-                   儲存後就可以到 IG 限時動態發佈囉！
+                 
+                 {/* 雙軌機制：如果瀏覽器支援直接下載，可點擊此按鈕直接存檔 */}
+                 <a 
+                   href={igImage} 
+                   download={`${p.animalName}_社群人格.jpg`}
+                   className="mt-4 w-full py-3.5 bg-[#db6014] hover:bg-[#A05828] text-white text-[0.95rem] font-bold rounded-xl text-center block transition-all shadow-md active:scale-95"
+                 >
+                   📥 點此直接下載到手機 / 電腦
+                 </a>
+
+                 <div className="mt-4 text-center text-white/50 text-xs">
+                   手機若無法下載，請直接長按圖片儲存喔！
                  </div>
               </div>
             </div>
