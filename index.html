@@ -1,1115 +1,836 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>美髮設計師社群人格分析｜RENATA × Holymake</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=Noto+Serif+TC:wght@400;600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-<style>
-/* ── HolyMake Brand Tokens ── */
-:root {
-  /* Logo 精確色值 */
-  --logo-holy:   #db6014;          /* Holy — Times New Roman MT 斜體 */
-  --logo-make:   rgba(255,134,59,.82); /* make — Be Vietnam，透明度 82% */
-  --logo-make-solid: #ff863b;      /* make 實色版（用於小尺寸） */
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>社群人格分析測驗｜RENATA × Holymake</title>
+  
+  <!-- 載入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 載入 Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;700&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- 載入 React 核心庫 -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  /* 品牌色系 */
-  --orange:     #db6014;           /* 主色對齊 Holy 色 */
-  --orange-lt:  #ff863b;           /* 淺橙對齊 make 色 */
-  --orange-bg:  #FBF0E8;
-  --brown:      #A05828;
-  --brown-dk:   #6B4423;
-  --dark:       #2C1A0A;
-  --sage:       #8A9E88;
-  --sage-lt:    #EBF0EA;
-  --yellow:     #D4C080;
-  --cream:      #F5F0E8;
-  --offwhite:   #FAF8F4;
-  --border:     #E8DDD0;
-  --white:      #FFFFFF;
+  <!-- 載入 html2canvas (用於將隱藏的 HTML 轉換為 IG 圖片) -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  /* 字型系統 */
-  --logo-holy-font: 'Times New Roman', 'Times New Roman MT', TimesNewRoman, serif; /* Holy */
-  --logo-make-font: 'Be Vietnam Pro', 'Be Vietnam', sans-serif;                    /* make */
-  --serif:          'Noto Serif TC', serif;                                         /* 中文標題內文 */
-  --sans:           'DM Sans', sans-serif;                                          /* UI 英文 */
+  <style>
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: #FAF8F4;
+      color: #2C1A0A;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* 背景雜訊紋理 */
+    body::before {
+      content: ''; 
+      position: fixed; 
+      inset: 0; 
+      pointer-events: none; 
+      z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+    .font-serif { font-family: 'Noto Serif TC', serif; }
+    .font-sans { font-family: 'DM Sans', sans-serif; }
+    
+    @media print {
+      body { background: white !important; }
+      body::before { display: none !important; }
+    }
+    
+    /* 動畫定義 */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-  --radius:    14px;
-  --radius-sm: 8px;
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; scroll-behavior: smooth; }
-body {
-  font-family: var(--sans);
-  background: var(--offwhite);
-  color: var(--dark);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* ── Grain texture overlay ── */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ── Layout ── */
-.page { display: none; animation: fadeUp .45s ease both; position: relative; z-index: 1; }
-.page.active { display: block; }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.container { max-width: 560px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
-
-/* ── Brand Header ── */
-.brand-bar {
-  display: flex; align-items: center; justify-content: center;
-  padding: 1.25rem 1.25rem .75rem;
-  position: relative; z-index: 1;
-}
-.brand-collab {
-  display: flex; align-items: center; justify-content: center;
-  gap: 10px; flex-wrap: wrap;
-}
-.brand-renata img {
-  height: 28px; width: auto;
-  filter: invert(0); /* 黑底白字 logo，頁面淺色背景需要 invert */
-  filter: invert(1) sepia(1) saturate(3) hue-rotate(340deg) brightness(.85);
-  /* 轉成品牌橙色調 */
-}
-.brand-x {
-  font-family: var(--sans);
-  font-size: .875rem;
-  color: var(--sage);
-  font-weight: 400;
-  flex-shrink: 0;
-}
-/* Holy — Times New Roman MT 斜體，#db6014 */
-.logo-holy {
-  font-family: var(--logo-holy-font);
-  font-style: italic;
-  font-weight: 700;
-  color: var(--logo-holy);
-}
-/* make — Be Vietnam，#ff863b 透明度 82% */
-.logo-make {
-  font-family: var(--logo-make-font);
-  font-style: normal;
-  font-weight: 700;
-  color: var(--logo-make);
-}
-.brand-logo {
-  font-size: 1.375rem;
-  line-height: 1;
-  letter-spacing: -.01em;
-}
-.brand-sub {
-  font-family: var(--logo-make-font);
-  font-size: .6rem;
-  color: var(--logo-make-solid);
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  display: block;
-  text-align: center;
-  margin-top: 6px;
-  opacity: .82;
-}
-
-/* ── Progress ── */
-.progress-wrap { margin-bottom: 2rem; }
-.progress-phase { display: flex; gap: 6px; margin-bottom: 8px; }
-.phase-dot { height: 2px; flex: 1; border-radius: 2px; background: var(--border); transition: background .4s; }
-.phase-dot.done   { background: var(--orange); }
-.phase-dot.active { background: var(--orange-lt); }
-.progress-label { font-size: .6875rem; color: var(--brown); letter-spacing: .06em; text-transform: uppercase; }
-
-/* ── Question ── */
-.q-eyebrow { font-size: .6875rem; color: var(--orange); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .5rem; font-weight: 500; }
-.q-text {
-  font-family: var(--serif);
-  font-size: 1.1875rem;
-  line-height: 1.6;
-  color: var(--dark);
-  margin-bottom: 1.75rem;
-}
-.options { display: flex; flex-direction: column; gap: 9px; }
-.opt {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 13px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--white);
-  cursor: pointer; text-align: left;
-  transition: border-color .15s, background .15s, transform .1s;
-  -webkit-tap-highlight-color: transparent;
-}
-.opt:hover { border-color: var(--orange); background: var(--orange-bg); }
-.opt.sel   { border-color: var(--orange); background: var(--orange-bg); }
-.opt:active { transform: scale(.988); }
-.opt-letter { font-size: .6875rem; font-weight: 500; color: var(--sage); min-width: 18px; padding-top: 3px; letter-spacing: .04em; }
-.opt-text   { font-size: .9375rem; color: var(--dark); line-height: 1.55; }
-
-/* ── Nav ── */
-.nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
-.btn-ghost {
-  padding: 10px 20px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: transparent; cursor: pointer;
-  font-size: .875rem; font-family: var(--sans);
-  color: var(--brown-dk);
-  transition: background .15s, border-color .15s;
-}
-.btn-ghost:hover { background: var(--cream); border-color: var(--orange); }
-.btn-ghost:disabled { opacity: .3; cursor: not-allowed; }
-.btn-primary {
-  padding: 11px 24px;
-  border: none; border-radius: var(--radius-sm);
-  background: var(--orange); color: var(--white);
-  font-size: .9375rem; font-family: var(--sans); font-weight: 500;
-  cursor: pointer;
-  transition: background .15s, transform .1s;
-}
-.btn-primary:hover  { background: var(--brown); }
-.btn-primary:active { transform: scale(.97); }
-.btn-primary:disabled { opacity: .4; cursor: not-allowed; }
-.q-counter { font-size: .8125rem; color: var(--sage); }
-
-/* ── Intro ── */
-.intro-hero { text-align: center; padding: 2.5rem 0 2rem; }
-.intro-quiz-title {
-  font-family: var(--logo-holy-font);
-  font-style: italic;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--logo-holy);
-  letter-spacing: .02em;
-  margin-bottom: 1.25rem;
-  line-height: 1.2;
-}
-.intro-eyebrow {
-  font-family: var(--logo-holy-font);
-  font-style: italic;
-  font-size: .9375rem;
-  color: var(--logo-holy);
-  margin-bottom: 1rem;
-  letter-spacing: .02em;
-}
-.intro-title {
-  font-family: var(--serif);
-  font-size: 1.75rem;
-  line-height: 1.45;
-  color: var(--dark);
-  margin-bottom: .75rem;
-}
-.intro-sub { font-size: .9375rem; color: var(--brown-dk); line-height: 1.75; margin-bottom: .5rem; }
-.intro-meta { font-size: .8125rem; color: var(--sage); margin-bottom: 1.75rem; }
-.intro-tags { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
-.tag { display: inline-block; padding: 4px 12px; border-radius: 99px; font-size: .75rem; font-weight: 500; }
-.tag-orange { background: var(--orange-bg); color: var(--brown); }
-.tag-sage   { background: var(--sage-lt);   color: #4A6849; }
-.tag-cream  { background: var(--cream);     color: var(--brown-dk); border: 1px solid var(--border); }
-
-/* ── Divider ── */
-.hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
-
-/* ── Contact Gate ── */
-.gate-ornament {
-  font-family: var(--logo-holy-font);
-  font-style: italic;
-  font-size: .875rem;
-  color: var(--logo-holy);
-  text-align: center;
-  margin-bottom: .5rem;
-  letter-spacing: .04em;
-}
-.gate-title { font-family: var(--serif); font-size: 1.4375rem; text-align: center; color: var(--dark); margin-bottom: .6rem; }
-.gate-sub   { font-size: .9375rem; color: var(--brown-dk); line-height: 1.7; margin-bottom: 2rem; text-align: center; }
-.form-group { margin-bottom: 1rem; }
-.form-label { font-size: .8125rem; color: var(--brown-dk); margin-bottom: 5px; display: block; letter-spacing: .02em; }
-.form-input {
-  width: 100%; padding: 11px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: .9375rem; font-family: var(--sans);
-  color: var(--dark); background: var(--white);
-  transition: border-color .15s; outline: none;
-}
-.form-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(224,112,48,.1); }
-.form-input::placeholder { color: #C8BDB5; }
-.form-error { font-size: .8125rem; color: #B84040; margin-top: 4px; display: none; }
-.form-privacy { font-size: .75rem; color: var(--sage); text-align: center; margin-top: .875rem; line-height: 1.6; }
-.sending-state { font-size: .875rem; color: var(--sage); text-align: center; padding: .75rem; }
-
-/* ── Report ── */
-.report-header {
-  background: var(--cream);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid var(--border);
-  position: relative;
-  overflow: hidden;
-}
-.report-header::after {
-  content: 'RENATA';
-  font-family: var(--logo-holy-font);
-  font-style: italic;
-  font-size: 4rem;
-  color: rgba(219,96,20,.07);
-  position: absolute;
-  right: -0.5rem; bottom: -0.75rem;
-  line-height: 1;
-  pointer-events: none;
-  user-select: none;
-}
-.report-eyebrow { font-size: .6875rem; color: var(--logo-holy); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .5rem; font-weight: 500; }
-.persona-emoji  { font-size: 1.75rem; margin-bottom: .4rem; }
-.persona-name   { font-family: var(--serif); font-size: 1.5rem; color: var(--dark); margin-bottom: .5rem; }
-.persona-desc   { font-size: .9rem; color: var(--brown-dk); line-height: 1.75; }
-
-.section-label {
-  font-size: .6875rem; font-weight: 500; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--sage);
-  margin-bottom: .875rem;
-}
-
-/* Bars */
-.bar-row { margin-bottom: 13px; }
-.bar-meta { display: flex; justify-content: space-between; font-size: .8125rem; color: var(--brown-dk); margin-bottom: 5px; }
-.bar-bg   { height: 4px; background: var(--border); border-radius: 2px; }
-.bar-fill { height: 4px; border-radius: 2px; width: 0; transition: width .9s cubic-bezier(.4,0,.2,1); }
-
-/* Audience trait cards */
-.aud-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.25rem; }
-.aud-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
-.aud-icon  { font-size: 1.25rem; min-width: 24px; padding-top: 1px; }
-.aud-title { font-size: .875rem; font-weight: 500; color: var(--dark); margin-bottom: 3px; }
-.aud-desc  { font-size: .8125rem; color: var(--brown-dk); line-height: 1.6; }
-
-/* Insight */
-.insight-box { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
-.insight-title { font-size: .875rem; font-weight: 500; color: var(--dark); margin-bottom: 5px; }
-.insight-text  { font-size: .875rem; color: var(--brown-dk); line-height: 1.7; }
-
-/* Tips */
-.tip-row { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-bottom: 1px solid var(--border); }
-.tip-row:last-child { border-bottom: none; }
-.tip-icon  { font-size: 1.125rem; min-width: 26px; }
-.tip-title { font-size: .875rem; font-weight: 500; color: var(--dark); margin-bottom: 3px; }
-.tip-desc  { font-size: .8125rem; color: var(--brown-dk); line-height: 1.6; }
-
-/* Products */
-.prod-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 10px; }
-.prod-card.featured { border: 1.5px solid var(--orange); }
-.prod-feat-label { font-size: .6875rem; font-weight: 500; color: var(--orange); margin-bottom: 8px; letter-spacing: .04em; }
-.prod-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
-.prod-name { font-size: .9375rem; font-weight: 500; color: var(--dark); }
-.prod-why  { font-size: .8125rem; color: var(--brown-dk); line-height: 1.65; margin-bottom: 10px; }
-.prod-footer { margin-top: 12px; }
-.prod-detail-block { background: var(--offwhite); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px; }
-.prod-detail-label { font-size: .6875rem; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--sage); margin-bottom: 5px; }
-.prod-detail-text { font-size: .8125rem; color: var(--brown-dk); line-height: 1.7; white-space: pre-wrap; }
-
-.btn-sm { padding: 7px 14px; border-radius: var(--radius-sm); font-size: .8125rem; font-family: var(--sans); cursor: pointer; transition: background .15s; }
-.btn-sm-pri   { background: var(--orange); color: var(--white); border: none; }
-.btn-sm-pri:hover  { background: var(--brown); }
-.btn-sm-ghost { background: transparent; border: 1px solid var(--border); color: var(--brown-dk); }
-.btn-sm-ghost:hover { background: var(--cream); border-color: var(--orange); }
-
-/* Final CTA block */
-.final-cta-block {
-  background: var(--dark);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  margin-bottom: .75rem;
-  position: relative; overflow: hidden;
-}
-.final-cta-block::before {
-  content: '';
-  position: absolute;
-  width: 220px; height: 220px;
-  background: radial-gradient(circle, rgba(219,96,20,.22), transparent 70%);
-  top: -80px; right: -50px;
-  pointer-events: none;
-}
-.final-cta-title {
-  font-family: var(--serif);
-  font-size: 1.125rem;
-  color: var(--white);
-  margin-bottom: .5rem;
-  line-height: 1.45;
-}
-.final-cta-sub {
-  font-size: .8125rem;
-  color: rgba(255,255,255,.6);
-  line-height: 1.75;
-  margin-bottom: 1.1rem;
-}
-.final-cta-btns { display: flex; flex-direction: column; gap: 8px; }
-.final-btn-pdf {
-  width: 100%; padding: 12px;
-  border: 1.5px solid rgba(255,255,255,.25);
-  border-radius: var(--radius-sm);
-  background: transparent; color: var(--white);
-  font-size: .9rem; font-family: var(--sans); font-weight: 500;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background .15s, border-color .15s;
-}
-.final-btn-pdf:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.45); }
-.final-btn-line {
-  width: 100%; padding: 12px;
-  border: none; border-radius: var(--radius-sm);
-  background: var(--orange); color: var(--white);
-  font-size: .9rem; font-family: var(--sans); font-weight: 500;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  transition: background .15s;
-}
-.final-btn-line:hover { background: var(--orange-lt); }
-
-/* Discuss 3 things block */
-.discuss-block { display: flex; flex-direction: column; gap: 10px; margin-bottom: .5rem; }
-.discuss-item {
-  display: flex; gap: 14px; align-items: flex-start;
-  background: var(--white); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 1rem 1.25rem;
-}
-.discuss-num {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: var(--orange); color: var(--white);
-  font-size: .875rem; font-weight: 500;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.discuss-title { font-size: .9375rem; font-weight: 500; color: var(--dark); margin-bottom: 4px; }
-.discuss-desc  { font-size: .8125rem; color: var(--brown-dk); line-height: 1.6; }
-
-/* LINE CTA block */
-.line-cta-block {
-  background: var(--dark);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  margin-top: .75rem;
-  position: relative;
-  overflow: hidden;
-  text-align: center;
-}
-.line-cta-block::before {
-  content: '';
-  position: absolute;
-  width: 200px; height: 200px;
-  background: radial-gradient(circle, rgba(219,96,20,.2), transparent 70%);
-  top: -80px; right: -40px;
-  pointer-events: none;
-}
-.line-cta-title {
-  font-family: var(--serif);
-  font-size: 1.0625rem;
-  color: var(--white);
-  line-height: 1.55;
-  margin-bottom: .5rem;
-}
-.line-cta-sub {
-  font-size: .8125rem;
-  color: rgba(255,255,255,.55);
-  line-height: 1.6;
-  margin-bottom: 1.1rem;
-}
-.line-cta-btn {
-  width: 100%; padding: 13px;
-  border: none; border-radius: var(--radius-sm);
-  background: var(--orange); color: var(--white);
-  font-size: .9375rem; font-family: var(--sans); font-weight: 500;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .15s;
-}
-.line-cta-btn:hover { background: var(--orange-lt); }
-
-/* Inline form at report bottom */
-.inline-form-block {
-  background: var(--cream);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  margin-bottom: .75rem;
-}
-.inline-form-title {
-  font-family: var(--serif);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--dark);
-  margin-bottom: .35rem;
-}
-.inline-form-sub {
-  font-size: .8125rem;
-  color: var(--brown-dk);
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
-
-/* CTA block */
-.cta-block {
-  background: var(--dark);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  margin-top: 1.25rem;
-  position: relative;
-  overflow: hidden;
-}
-.cta-block::before {
-  content: '';
-  position: absolute;
-  width: 180px; height: 180px;
-  background: radial-gradient(circle, rgba(224,112,48,.25), transparent 70%);
-  top: -60px; right: -40px;
-  pointer-events: none;
-}
-.cta-title { font-family: var(--serif); font-size: 1.0625rem; color: var(--white); margin-bottom: 4px; }
-.cta-sub   { font-size: .8125rem; color: rgba(255,255,255,.55); line-height: 1.65; margin-bottom: 1rem; }
-.btn-white {
-  width: 100%; padding: 12px;
-  border: none; border-radius: var(--radius-sm);
-  background: var(--orange); color: var(--white);
-  font-size: .9375rem; font-family: var(--sans); font-weight: 500;
-  cursor: pointer; transition: background .15s;
-}
-.btn-white:hover { background: var(--orange-lt); }
-
-.restart-btn {
-  width: 100%; padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  font-size: .875rem; font-family: var(--sans);
-  color: var(--brown-dk); cursor: pointer; margin-top: .75rem;
-  transition: background .15s, border-color .15s;
-}
-.restart-btn:hover { background: var(--cream); border-color: var(--orange); color: var(--brown); }
-
-.save-pdf-btn {
-  width: 100%; padding: 13px;
-  border: 1.5px solid var(--orange);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  font-size: .9375rem; font-family: var(--sans); font-weight: 500;
-  color: var(--orange); cursor: pointer; margin-top: .75rem;
-  display: flex; align-items: center; justify-content: center; gap: 4px;
-  transition: background .15s, color .15s;
-}
-.save-pdf-btn:hover { background: var(--orange-bg); }
-
-/* ── Toast ── */
-.toast {
-  position: fixed; bottom: 1.5rem; left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: var(--dark); color: var(--white);
-  padding: 10px 20px; border-radius: 99px;
-  font-size: .875rem; transition: transform .3s ease;
-  pointer-events: none; white-space: nowrap; z-index: 999;
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
-
-/* ── Print / PDF ── */
-@media print {
-  body { background: #fff !important; }
-  body::before { display: none; }
-  .no-print { display: none !important; }
-  .page { display: none !important; }
-  #page-result { display: block !important; }
-  .container { padding: 1rem 1.5rem; }
-  .cta-block { background: var(--cream) !important; border: 1px solid var(--border); }
-  .cta-block .btn-white { display: none; }
-  .cta-title { color: var(--dark) !important; }
-  .cta-sub { color: var(--brown-dk) !important; }
-  .btn-sm, .restart-btn, .save-pdf-btn { display: none !important; }
-  .bar-fill { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .tag { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .prod-card.featured { border: 1.5px solid var(--orange) !important; }
-  @page { margin: 1.5cm; size: A4; }
-}
-
-/* ── Responsive ── */
-@media (max-width: 420px) {
-  .aud-grid { grid-template-columns: 1fr 1fr; }
-  .aud-grid .aud-card:last-child { grid-column: 1 / -1; }
-  .q-text { font-size: 1.0625rem; }
-  .intro-title { font-size: 1.5rem; }
-}
-</style>
+    /* 確保隱藏卡片渲染時不受視窗大小干擾 */
+    .render-container {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+    }
+  </style>
 </head>
 <body>
+  <div id="root"></div>
 
-<!-- Brand Header (shown on all pages) -->
-<div class="brand-bar">
-  <div style="text-align:center">
-    <div class="brand-collab">
-      <img src="data:image/png;base64,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ntSWPrj9OnbU19ejd+/empszuqo5BOKpi+bCQCAA0zSxbdu2x9atWzf8jTfewAcffIB3331XM8FYLKabFvL3lqJx+L14PI6pU6fiqquuqv/xj39cDLReOxLTNFFUVIQLL7xQN62kYMsHP59SCoFAAEcddRRCoZAOAshGGLc9HyoYDCIUCuG5556D1+tV06dPN2QJMJq8Cv657AGZ8KJFi9S///1vANB5iy0xqUQioenU7/dj7dq1+Oijj9Z37dr15IxP/Fvo27evQUYtzarpnCIo5KPRKN555x21detWxwze4/HgggsuwL333msw+CYdEy2FMk/C8Xg8a/5LKumVlZWXL1u2DAAspRSdBILxkPP1119j+vTpE++9995JbWrdWr58ecrq/qmGy+VSwWBQAVBKWduucPA00FxFcX7HNM0mbTW++OKLR++++25VUlKinyMra7c0ZLV8AKp3796KpXpao3CnfF97ixOaEXJ5ML9lf9uz8B2pabLYcrpD7mlRUZEuwj1mzBjFZ4VCISiVO21C7INFytMZhmEo+31yoYiuHFzvCy64QPMFe9HifQ1ZtN0wDHXNNdcopVqPBvc16urqLLUdiatOn51qLy644IK09heAuv/++/U+y44dLT2fvNN+fTrv0BrjnnvusRTGd9IpA2gswO3xeJTL5VJHH320cvrumRppCTi5ibyB035iNBNIJOKmcQG4uYlEAqNGjdJ96ijsnAphEpnH41FLly5VEuG/62A+EOeZawzK6WCOEk/fTgjouwo4VkdPxTBdLpcyDEM9/fTTGrekIM41BeJAFXChUAirVq1KiyfYhZvsNOB2u9UXX3zxaDZ73klcSUcwyO8xH/Css85yLOB53ciRI3V/vGg0mjbu8nrOIVtrF4vFdEsc0qR9P53iAOXE3LlzVVv171RKpR9FqZTSpkOg4Uguj+DcILaz4XUMJpHmJpoMZKAGN/TBBx801q1bN7dbt26Oc2h4f9rCE4kEHnnkkVbNwzBEh2KllMWP1Vab6HTIebIiDP2f2Yh0U0ppU4fb7dYBRBJGjBiBadOmKcAajFTIk8s80Bw2evRoi7ndqf9M1rDkd5LJJB5++OE7smECpw+Ng8FMhJboQ/IJr9er6SJdEzlzCVnEXAZbtCTYeB3nIH9mGrxeL2bOnDl3165dlsA8xlk4vQfQ+A4jR47UUe5t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" alt="RENATA" style="height:26px;width:auto;" />
-      <span class="brand-x">×</span>
-      <div class="brand-logo"><span class="logo-holy">Holy</span><span class="logo-make">make</span></div>
-    </div>
-    <span class="brand-sub">RENATA × Holymake 為你量身打造</span>
-  </div>
-</div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
-<!-- ══ INTRO ══ -->
-<div id="page-intro" class="page active">
-  <div class="container">
-    <div class="intro-hero">
-      <div class="intro-quiz-title">美髮設計師社群人格分析</div>
-      <div class="intro-eyebrow">RENATA × Holymake 為你量身打造</div>
-      <h1 class="intro-title">你的社群，<br>吸引了哪種客人？</h1>
-      <p class="intro-sub">6 道題，找出你的社群人格、你吸引的受眾類型，<br>以及最適合你客群的髮品推薦方向。</p>
-      <p class="intro-meta">⏱ 約 2 分鐘 &nbsp;·&nbsp; 6 題 &nbsp;·&nbsp; 3 個分析維度</p>
-      <div class="intro-tags">
-        <span class="tag tag-orange">社群人格</span>
-        <span style="font-size:.8rem;color:var(--sage);align-self:center">→</span>
-        <span class="tag tag-sage">吸引的觀眾類型</span>
-        <span style="font-size:.8rem;color:var(--sage);align-self:center">→</span>
-        <span class="tag tag-cream">髮品推薦方向</span>
-      </div>
-      <button class="btn-primary" onclick="startQuiz()" style="width:100%;padding:14px;font-size:1rem">開始分析</button>
-      <p style="font-size:.75rem;color:var(--sage);margin-top:1rem">
-        Powered by RENATA × <span class="logo-holy" style="font-size:inherit">Holy</span><span class="logo-make" style="font-size:inherit">make</span>
-      </p>
-    </div>
-  </div>
-</div>
+    const LINE_URL = 'https://lin.ee/YF1AjRg';
+    const PHASES = ['社群人格', '吸引的觀眾', '觀眾需求'];
 
-<!-- ══ QUIZ ══ -->
-<div id="page-quiz" class="page">
-  <div class="container">
-    <div class="progress-wrap">
-      <div class="progress-phase" id="phase-dots"></div>
-      <div class="progress-label" id="phase-label"></div>
-    </div>
-    <div class="q-eyebrow" id="q-eyebrow"></div>
-    <div class="q-text" id="q-text"></div>
-    <div class="options" id="q-opts"></div>
-    <div class="nav">
-      <button class="btn-ghost" id="btn-prev" onclick="prevQ()" disabled>← 上一題</button>
-      <span class="q-counter" id="q-counter"></span>
-      <button class="btn-primary" id="btn-next" onclick="nextQ()" disabled>下一題 →</button>
-    </div>
-  </div>
-</div>
+    const QS = [
+      { phase:0, text:'你在社群上最常發什麼類型的內容？', opts:[
+        {t:'染燙前後對比、造型成品照',d:{visual:3,trend:1}},
+        {t:'日常工作紀錄、與客人的互動',d:{story:3,warm:1}},
+        {t:'護髮知識、成分解析、教學貼文',d:{edu:3,trust:1}},
+        {t:'跟上流行、話題標籤、時事髮色',d:{trend:3,visual:1}}
+      ]},
+      { phase:0, text:'你的貼文通常會得到什麼反應？', opts:[
+        {t:'大量收藏和分享，觸及陌生人多',d:{reach:3,visual:1}},
+        {t:'老客人留言互動、私訊詢問',d:{loyal:3,warm:2}},
+        {t:'同業或對護髮有研究的人討論',d:{edu:2,trust:2}},
+        {t:'新追蹤者增加，問「在哪做的」',d:{reach:2,trend:2}}
+      ]},
+      { phase:1, text:'你覺得追蹤你的人，最主要的動機是？', opts:[
+        {t:'被你的作品吸引，想預約同款',d:{booking:3,visual:1}},
+        {t:'認識你這個人，想來找你聊',d:{warm:3,loyal:2}},
+        {t:'想學習護髮知識或技術',d:{edu:3,trust:1}},
+        {t:'喜歡你分享的流行資訊',d:{trend:3,reach:1}}
+      ]},
+      { phase:1, text:'你的客人通常怎麼找到你？', opts:[
+        {t:'看到作品照然後私訊詢問',d:{visual:2,booking:2}},
+        {t:'朋友介紹、口碑相傳',d:{loyal:3,warm:2}},
+        {t:'搜尋特定髮型或技術關鍵字',d:{edu:2,trust:2}},
+        {t:'被標籤、限動、話題吸引進來',d:{trend:2,reach:2}}
+      ]},
+      { phase:2, text:'你的客人最常在意什麼？', opts:[
+        {t:'跟上流行、拍出來好看',d:{trend:2,visual:2}},
+        {t:'適合自己的風格、自然感',d:{warm:2,loyal:2}},
+        {t:'髮質健康、不傷頭髮',d:{trust:3,edu:1}},
+        {t:'維持造型的方便度、居家保養',d:{edu:2,trust:2}}
+      ]},
+      { phase:2, text:'你通常用什麼方式向客人推薦產品？', opts:[
+        {t:'做完直接示範效果，現場成交',d:{booking:2,visual:2}},
+        {t:'聊天過程中自然帶到，不強迫',d:{warm:3,loyal:1}},
+        {t:'解釋成分原理，講清楚為什麼需要',d:{edu:3,trust:2}},
+        {t:'拍成內容放上社群，讓客人自己問',d:{reach:2,trend:1}}
+      ]}
+    ];
 
-<!-- ══ RESULT（含底部輕量表單）══ -->
-<div id="page-result" class="page">
-  <div class="container" id="result-body"></div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// ─── CONFIG ─────────────────────────────────────────────
-const SHEETS_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
-// ────────────────────────────────────────────────────────
-
-const PHASES = ['社群人格', '吸引的觀眾', '觀眾需求'];
-
-const QS = [
-  { phase:0, text:'你在社群上最常發什麼類型的內容？', opts:[
-    {t:'染燙前後對比、造型成品照',d:{visual:3,trend:1}},
-    {t:'日常工作紀錄、與客人的互動',d:{story:3,warm:1}},
-    {t:'護髮知識、成分解析、教學貼文',d:{edu:3,trust:1}},
-    {t:'跟上流行、話題標籤、時事髮色',d:{trend:3,visual:1}}
-  ]},
-  { phase:0, text:'你的貼文通常會得到什麼反應？', opts:[
-    {t:'大量收藏和分享，觸及陌生人多',d:{reach:3,visual:1}},
-    {t:'老客人留言互動、私訊詢問',d:{loyal:3,warm:2}},
-    {t:'同業或對護髮有研究的人討論',d:{edu:2,trust:2}},
-    {t:'新追蹤者增加，問「在哪做的」',d:{reach:2,trend:2}}
-  ]},
-  { phase:1, text:'你覺得追蹤你的人，最主要的動機是？', opts:[
-    {t:'被你的作品吸引，想預約同款',d:{booking:3,visual:1}},
-    {t:'認識你這個人，想來找你聊',d:{warm:3,loyal:2}},
-    {t:'想學習護髮知識或技術',d:{edu:3,trust:1}},
-    {t:'喜歡你分享的流行資訊',d:{trend:3,reach:1}}
-  ]},
-  { phase:1, text:'你的客人通常怎麼找到你？', opts:[
-    {t:'看到作品照然後私訊詢問',d:{visual:2,booking:2}},
-    {t:'朋友介紹、口碑相傳',d:{loyal:3,warm:2}},
-    {t:'搜尋特定髮型或技術關鍵字',d:{edu:2,trust:2}},
-    {t:'被標籤、限動、話題吸引進來',d:{trend:2,reach:2}}
-  ]},
-  { phase:2, text:'你的客人最常在意什麼？', opts:[
-    {t:'跟上流行、拍出來好看',d:{trend:2,visual:2}},
-    {t:'適合自己的風格、自然感',d:{warm:2,loyal:2}},
-    {t:'髮質健康、不傷頭髮',d:{trust:3,edu:1}},
-    {t:'維持造型的方便度、居家保養',d:{edu:2,trust:2}}
-  ]},
-  { phase:2, text:'你通常用什麼方式向客人推薦產品？', opts:[
-    {t:'做完直接示範效果，現場成交',d:{booking:2,visual:2}},
-    {t:'聊天過程中自然帶到，不強迫',d:{warm:3,loyal:1}},
-    {t:'解釋成分原理，講清楚為什麼需要',d:{edu:3,trust:2}},
-    {t:'拍成內容放上社群，讓客人自己問',d:{reach:2,trend:1}}
-  ]}
-];
-
-const PERSONAS = {
-  visual:{
-    name:'造型視覺型設計師', emoji:'📸',
-    desc:'你的社群是一本視覺作品集，吸引的是被造型驚豔的潛在客戶。你的受眾高度視覺導向，做決定前需要「看到效果」。成交的關鍵是讓產品成為視覺內容的一部分。',
-    audience:[
-      {icon:'👁️', title:'用眼睛做決定', desc:'他們在追蹤你之前，已經反覆看過你的作品。一張照片的衝擊感，比任何文字說明都有力。'},
-      {icon:'⚡', title:'衝動但精準', desc:'一旦看到喜歡的造型，行動速度很快。你只需要在對的時機出現，他們會自己找上門。'},
-      {icon:'🔄', title:'會比較、但也會回流', desc:'他們同時追蹤多個設計師，但一旦找到真正懂自己審美的人，就會建立長期關係。'}
-    ],
-    insight:'你的受眾是「慾望型消費者」——他們不是因為需要才來，而是因為被你的作品點燃了想改變的欲望。衝動但有熱情，關鍵是在他們最有感覺的那一刻讓他們採取行動。',
-    bars:[{l:'視覺吸引力',p:92,c:'#E07030'},{l:'潛客轉換率',p:78,c:'#A05828'},{l:'受眾黏著度',p:55,c:'#E07030'}],
-    tips:[
-      {i:'🎬',t:'Reels 造型過程',s:'15–30 秒快節奏剪輯，不用刻意對鏡頭說話，專注展現操作細節。從吹整、上色到成品一氣呵成，觸及陌生受眾效果最好。'},
-      {i:'📸',t:'前後對比短影音',s:'同一個角度、同一盞燈，拍改變前後的 5 秒素材。固定格式讓人一眼認出是你的作品，演算法也愛這種高完成率的內容。'},
-      {i:'🏷️',t:'限動投票 → 私訊導流',s:'「你想染這個色嗎？」丟出投票後，主動私訊所有選「想」的人。不用等他們開口，縮短從追蹤到預約的距離。'}
-    ],
-    products:[
-      {
-        name:'護色鎖色精華', tag:'配合染後服務',
-        why:'你的客人在乎顏色維持效果，這是他們願意在沙龍外持續消費的品項。搭配染髮服務一起帶走，自然成交。',
-        shoot:'做完直接示範光澤效果，15–30 秒快剪，不用對鏡頭說話，專注手部動作。從染後沖洗、上精華到成品光澤一氣呵成，讓觀眾直接看到「前後差異」。',
-        script:'「這瓶護色精華搭配我們的染色技術，可以讓顏色維持延長 2–3 週。我建議每次染完都帶一瓶回家，這樣效果會更穩定——妳剛才看到我示範的光澤，就是用這個。」'
+    const PERSONAS = {
+      visual:{
+        name:'造型視覺型設計師', emoji:'📸',
+        animalEmoji:'🦚', animalName:'濾鏡孔雀', rarity: 18,
+        animalHashtags: ['#孔雀級審美', '#視覺細節控', '#作品即名片'],
+        shortDesc: '社群就是你的視覺作品集，靠美感與驚豔造型讓人一眼入坑。',
+        desc:'你的社群是一本視覺作品集，吸引的是被造型驚豔的潛在客戶。你的受眾高度視覺導向，做決定前需要「看到效果」。成交的關鍵是讓產品成為視覺內容的一部分。',
+        audience:[
+          {icon:'👁️', title:'眼球至上主義者', desc:'他們在追蹤你之前，已經反覆看過你的作品。一張照片的衝擊感，比任何文字說明都有力。'},
+          {icon:'⚡', title:'衝動型預約新客', desc:'一旦看到喜歡的造型，行動速度很快。你只需要在對的時機出現，他們會自己找上門。'},
+          {icon:'🔄', title:'審美共鳴追隨者', desc:'他們同時追蹤多個設計師，但一旦找到真正懂自己審美的人，就會建立長期關係。'}
+        ],
+        insight:'你的受眾是「慾望型消費者」——他們不是因為需要才來，而是因為被你的作品點燃了想改變的欲望。衝動但有熱情，關鍵是在他們最有感覺的那一刻讓他們採取行動。',
+        bars:[{l:'視覺吸引力',p:92,c:'#E07030'},{l:'潛客轉換率',p:78,c:'#A05828'},{l:'受眾黏著度',p:55,c:'#E07030'}],
+        tips:[
+          {i:'🎬',t:'Reels 造型過程',s:'15–30 秒快節奏剪輯，不用刻意對鏡頭說話，專注展現操作細節。從吹整、上色到成品一氣呵成，觸及陌生受眾效果最好。'},
+          {i:'📸',t:'前後對比短影音',s:'同一個角度、同一盞燈，拍改變前後的 5 秒素材。固定格式讓人一眼認出是你的作品，演算法也愛這種高完成率的內容。'},
+          {i:'🏷️',t:'限動投票 → 私訊導流',s:'「你想染這個色嗎？」丟出投票後，主動私訊所有選「想」的人。不用等他們開口，縮短從追蹤到預約的距離。'}
+        ],
+        products:[
+          {
+            name:'護色鎖色精華', tag:'配合染後服務',
+            why:'你的客人在乎顏色維持效果，這是他們願意在沙龍外持續消費的品項。搭配染髮服務一起帶走，自然成交。',
+            shoot:'做完直接示範光澤效果，15–30 秒快剪，不用對鏡頭說話，專注手部動作。從染後沖洗、上精華到成品光澤一氣呵成，讓觀眾直接看到「前後差異」。',
+            script:'「這瓶護色精華搭配我們的染色技術，可以讓顏色維持延長 2–3 週。我建議每次染完都帶一瓶回家，這樣效果會更穩定——妳剛才看到我示範的光澤，就是用這個。」'
+          },
+          {
+            name:'造型定型噴霧', tag:'拍照必備',
+            why:'讓造型在拍照時更完美呈現，同時讓客人回家後能重現效果——自然產生回購需求。',
+            shoot:'吹整收尾時噴上，鏡頭抓住髮絲定型的瞬間。結尾用慢動作展示成品，配上乾淨背景， 5 秒就能讓人想截圖收藏。',
+            script:'「這款噴霧讓造型撐一整天，妳回家自己噴，效果跟現在差不多。以後不用每次出門前都擔心頭髮跑掉。」'
+          }
+        ]
       },
-      {
-        name:'造型定型噴霧', tag:'拍照必備',
-        why:'讓造型在拍照時更完美呈現，同時讓客人回家後能重現效果——自然產生回購需求。',
-        shoot:'吹整收尾時噴上，鏡頭抓住髮絲定型的瞬間。結尾用慢動作展示成品，配上乾淨背景，5 秒就能讓人想截圖收藏。',
-        script:'「這款噴霧讓造型撐一整天，妳回家自己噴，效果跟現在差不多。以後不用每次出門前都擔心頭髮跑掉。」'
+      warm:{
+        name:'關係溫度型設計師', emoji:'☕',
+        animalEmoji:'🦦', animalName:'暖心水豚', rarity: 26,
+        animalHashtags: ['#暖流守護者', '#走心天花板', '#靈魂傾聽大師'],
+        shortDesc: '靠真誠建立社群，客人找的不是技術，而是「懂我的你」。',
+        desc:'你靠真誠和溫度建立社群。吸引你的受眾不只是要做頭髮，他們要的是「那個懂我的設計師」。信任是你最大的資產，也是推薦產品最有力的後盾。',
+        audience:[
+          {icon:'🤝', title:'尋求懂我的人', desc:'他們選設計師的標準不只是作品，更在乎「跟這個人聊不聊得來」。你的個性本身就是最強的吸引力。'},
+          {icon:'🔁', title:'超高黏著回頭客', desc:'一旦建立信任，他們幾乎不會換人。定期回來不只是保養頭髮，也是來找你說說話。'},
+          {icon:'📣', title:'熱心口碑傳播者', desc:'他們推薦你不需要理由，因為介紹朋友給「懂我的設計師」，對他們來說是一種分享好東西的樂趣。'}
+        ],
+        insight:'你的受眾是「關係型消費者」——他們把找設計師視為長期關係，換人的門檻很高。對你的推薦信任度極高，你說好的產品他們幾乎都願意試，是最穩定的推廣渠道。',
+        bars:[{l:'客人忠誠度',p:90,c:'#8A9E88'},{l:'口碑擴散力',p:85,c:'#A05828'},{l:'潛客觸及率',p:48,c:'#8A9E88'}],
+        tips:[
+          {i:'☕',t:'幕後日常 Vlog',s:'紀錄工作間隙或備料過程，不需要華麗轉場，原音呈現你跟客人的真實互動。拍完直接發，不修也沒關係，真實感比精緻感更有傳播力。'},
+          {i:'💬',t:'客人心聲短影音',s:'做完之後讓客人對鏡頭說一句話就好，不需要腳本。「妳覺得今天做完跟之前有什麼不一樣？」30 秒以內，原音原色，比任何廣告都有說服力。'}
+        ],
+        products:[
+          {
+            name:'居家深層護髮組', tag:'回流客必推',
+            why:'你的回流客信任你的推薦，護髮組是最自然的「每次帶一組回家」品項，能穩定創造被動收入。',
+            shoot:'邊幫客人做護髮邊介紹，原音收錄，像跟老朋友說話。結尾讓客人拿著產品拍一個笑臉，不用說話，表情就是最好的推薦。',
+            script:'「這組我自己在用，每週敷一次，妳摸我的頭髮——是不是很軟？我幫妳搭配好帶回去，下次回來妳可以跟我說差別在哪。」'
+          },
+          {
+            name:'頭皮養護精華', tag:'信任感加分',
+            why:'長期客人更在意頭皮健康，這類專業級產品用你的解說推薦效果最好，建立你的專業信任感。',
+            shoot:'施作時對著鏡頭自然說話，像在跟客人聊天。不用腳本，把平常解說的話說一遍就好，客人在旁邊的反應就是最真實的背書。',
+            script:'「妳這個頭皮最近比較容易出油對嗎？這款精華可以幫妳調節，不是洗掉油脂，而是讓頭皮自己恢復平衡。長期用下來，我幫妳觀察，通常第三週開始會有感覺。」'
+          }
+        ]
       },
-      {
-        name:'光澤護髮精油', tag:'視覺效果佳',
-        why:'快速製造沙龍感光澤，視覺效果立即可見，做完造型後示範讓客人現場決定。',
-        shoot:'拍「用前 vs 用後」的 5 秒對比片段，同角度、同光源，讓光澤差異一目了然。搭配強打光，視覺衝擊最強。',
-        script:'「這瓶精油不油膩，我幫妳抹上去之後，妳看——光澤馬上出來了。很多客人說回家用完，朋友都問她去哪做頭髮。」'
+      edu:{
+        name:'知識專業型設計師', emoji:'🔬',
+        animalEmoji:'🦉', animalName:'百科貓頭鷹', rarity: 12,
+        animalHashtags: ['#成分考究家', '#理性腦權威', '#髮質診斷大師'],
+        shortDesc: '用知識與專業建立權威，你的推薦對客人來說就是專家背書。',
+        desc:'你用知識和專業建立信任。你的受眾是「認真研究過才來的」，對你有高度信任，也願意為真正好的產品買單。你的推薦對他們來說是「專家背書」。',
+        audience:[
+          {icon:'🔍', title:'理性研究狂熱者', desc:'他們在追蹤你之前就做過功課了。看過你多篇貼文、比較過幾個設計師，才決定聯繫你——所以一旦來了，意願很強。'},
+          {icon:'🧠', title:'精準發問的鐵粉', desc:'他們不只問「怎麼讓頭髮變好」，他們會問「我這個髮質適合用什麼成分」。這是高信任度的表現，也是你最好的推薦時機。'},
+          {icon:'💎', title:'頂級療程消費者', desc:'他們不追求便宜，追求的是「值得」。你不需要打折，只需要說清楚為什麼值得這個價格。'}
+        ],
+        insight:'你的受眾是「研究型消費者」——在追蹤你之前就做過功課了。他們問的問題更精準，也更願意花時間和金錢在真正有效的方案上。你不需要說服他們，只需要給他們一個好理由。',
+        bars:[{l:'受眾信任度',p:92,c:'#D4C080'},{l:'高單價轉換',p:80,c:'#A05828'},{l:'觸及新受眾',p:52,c:'#8A9E88'}],
+        tips:[
+          {i:'🔬',t:'成分解析短影音',s:'拿著產品對鏡頭說：「這瓶為什麼值得？」30 秒說清楚一個成分的作用。不用完美，像在跟客人解說一樣錄下來就對了，收藏率極高。'},
+          {i:'📋',t:'髮質診斷影片系列',s:'「你是哪種髮質？」開頭丟問題，接著示範怎麼判斷，最後帶出對應解法。每支影片聚焦一種髮質，做成系列，讓受眾自動追更。'}
+        ],
+        products:[
+          {
+            name:'髮質修護療程組', tag:'高單價主力',
+            why:'你的受眾願意為有理有據的高單價產品付費，療程組搭配你的成分說明推薦，成交率最高。',
+            shoot:'施作療程時鏡頭對準手部操作，同步說明每個步驟的用途。30 秒說清楚「為什麼這個步驟不能省」，讓觀眾覺得「原來專業差這裡」。',
+            script:'「妳的髮質現在缺的是蛋白質結構，這組療程會幫妳從內部修補斷裂的角質層。不是表面感覺軟，而是真的強化髮絲。通常做完兩次會有明顯感覺，妳可以摸摸看彈性的差別。」'
+          },
+          {
+            name:'專業級護色髮品', tag:'好說故事',
+            why:'有科學依據的配方，你能說清楚為什麼值得，不需要打折就能成交。',
+            shoot:'用色票或比色卡呈現「有用 vs 沒用護色品」的顏色維持差異，搭配你的解說。視覺化的科學說明讓專業感立即提升，這種內容收藏率是一般貼文的 3 倍。',
+            script:'「一般護色洗髮精只是在頭髮表面形成薄膜，這款的分子結構可以滲透進角質層，從內鎖住色素分子。所以即使天天洗，顏色流失速度也比一般慢很多。我跟妳說為什麼值得這個價格⋯⋯」'
+          }
+        ]
+      },
+      trend:{
+        name:'話題流行型設計師', emoji:'🔥',
+        animalEmoji:'🐆', animalName:'追風獵豹', rarity: 22,
+        animalHashtags: ['#潮流探路先鋒', '#爆款製造機', '#流量密碼持有者'],
+        shortDesc: '永遠快半拍的流行製造機，靠話題與稀缺感帶動預約。',
+        desc:'你的社群跟著趨勢走，吸引的是對流行敏感的追蹤者。你有打爆話題的潛力，受眾範圍廣，把流量轉成預約是你最重要的課題。',
+        audience:[
+          {icon:'🔥', title:'潮流第一線追隨者', desc:'他們不需要太多說服，只需要一個「現在就要做」的理由。稀缺感和時效性，是讓他們從追蹤者變成預約客人的關鍵。'},
+          {icon:'👀', title:'廣泛追蹤隨時比較', desc:'他們同時在看很多設計師，但不代表不忠誠——只要你持續出現在他們的動態，品牌記憶度就在累積。'},
+          {icon:'📲', title:'高頻率轉發分享者', desc:'看到喜歡的造型或話題，他們會主動分享給朋友。你的每一支爆紅影片，背後都有這群人在幫你擴散。'}
+        ],
+        insight:'你的受眾是「趨勢追隨者」——他們關注的不じる你，而是整個流行美髮圈。你的優勢是觸及廣，但競爭也激烈。讓他們從「追蹤」到「預約」的關鍵，是製造緊迫感和獨特性。',
+        bars:[{l:'社群觸及率',p:88,c:'#E07030'},{l:'話題製造力',p:85,c:'#A05828'},{l:'受眾穩定度',p:50,c:'#8A9E88'}],
+        tips:[
+          {i:'🔥',t:'流行預測短影音',s:'比時事快半拍，對著鏡頭說：「下個月這個色會紅，原因是⋯⋯」15 秒說完，不用 B-roll，直接用你的臉和自信說話，建立預言者形象。'},
+          {i:'⏰',t:'限額開放影片',s:'「本月最後 3 個名額，這週五截止」——錄一支 10 秒的限額宣告影片，不需要剪輯，拍完直發。趨勢型受眾決策快，稀缺感是最強的驅動力。'}
+        ],
+        products:[
+          {
+            name:'專業級髮色專業品', tag:'話題連結強',
+            why:'跟流行色綁定，你可以用「配合最新流行色」的說法推薦，話題感強，容易在社群上帶動討論。',
+            shoot:'搭配當季最夯髮色的成品照或影片，結尾帶出「這個顏色能維持這麼久，靠的是這瓶」。語速快、節奏強，10–15 秒，讓人看完想轉發。',
+            script:'「今年最夯的奶茶棕，90% 的人一個月就退色了。原因不是染壞，是沒有搭配護色品。這款是我指定用的，搭配我做的色系，顏色可以比一般多撐 3 週。這週還有 2 個名額，要的私訊我。」'
+          },
+          {
+            name:'髮質頭皮修護精華', tag:'客單價提升',
+            why:'追求流行代表染燙頻率高，受損問題嚴重，修護精華是每次服務的自然附加，提升客單價。',
+            shoot:'拍「密集染燙後的頭髮 vs 做修護後的頭髮」對比，15 秒快剪，配上強節奏音樂。重點是「視覺反差」要夠大，讓人停住滑手指的動作。',
+            script:'「妳今年染了幾次？超過 3 次的話，妳的髮質已經在求救了。這款修護精華是我給每個高頻染燙客人的必備，不是保養品，是修復工程。妳現在做，比之後斷髮再補便宜多了。」'
+          }
+        ]
       }
-    ]
-  },
-  warm:{
-    name:'關係溫度型設計師', emoji:'☕',
-    desc:'你靠真誠和溫度建立社群。吸引你的受眾不只是要做頭髮，他們要的是「那個懂我的設計師」。信任是你最大的資產，也是推薦產品最有力的後盾。',
-    audience:[
-      {icon:'🤝', title:'找的是人，不是技術', desc:'他們選設計師的標準不只是作品，更在乎「跟這個人聊不聊得來」。你的個性本身就是最強的吸引力。'},
-      {icon:'🔁', title:'高忠誠度、低流失率', desc:'一旦建立信任，他們幾乎不會換人。定期回來不只是保養頭髮，也是來找你說說話。'},
-      {icon:'📣', title:'天生的口碑傳播者', desc:'他們推薦你不需要理由，因為介紹朋友給「懂我的設計師」，對他們來說是一種分享好東西的樂趣。'}
-    ],
-    insight:'你的受眾是「關係型消費者」——他們把找設計師視為長期關係，換人的門檻很高。對你的推薦信任度極高，你說好的產品他們幾乎都願意試，是最穩定的推廣渠道。',
-    bars:[{l:'客人忠誠度',p:90,c:'#8A9E88'},{l:'口碑擴散力',p:85,c:'#A05828'},{l:'潛客觸及率',p:48,c:'#8A9E88'}],
-    tips:[
-      {i:'☕',t:'幕後日常 Vlog',s:'紀錄工作間隙或備料過程，不需要華麗轉場，原音呈現你跟客人的真實互動。拍完直接發，不修也沒關係，真實感比精緻感更有傳播力。'},
-      {i:'💬',t:'客人心聲短影音',s:'做完之後讓客人對鏡頭說一句話就好，不需要腳本。「妳覺得今天做完跟之前有什麼不一樣？」30 秒以內，原音原色，比任何廣告都有說服力。'},
-      {i:'🎁',t:'老客人回訪紀念影片',s:'固定客人第 5 次、第 10 次回來時，幫她拍一支 15 秒的「紀念影片」。這種內容老客人一定會分享，是你最低成本的口碑擴散工具。'}
-    ],
-    products:[
-      {
-        name:'居家深層護髮組', tag:'回流客必推',
-        why:'你的回流客信任你的推薦，護髮組是最自然的「每次帶一組回家」品項，能穩定創造被動收入。',
-        shoot:'邊幫客人做護髮邊介紹，原音收錄，像跟老朋友說話。結尾讓客人拿著產品拍一個笑臉，不用說話，表情就是最好的推薦。',
-        script:'「這組我自己在用，每週敷一次，妳摸我的頭髮——是不是很軟？我幫妳搭配好帶回去，下次回來妳可以跟我說差別在哪。」'
-      },
-      {
-        name:'頭皮養護精華', tag:'信任感加分',
-        why:'長期客人更在意頭皮健康，這類專業級產品用你的解說推薦效果最好，建立你的專業信任感。',
-        shoot:'施作時對著鏡頭自然說話，像在跟客人聊天。不用腳本，把平常解說的話說一遍就好，客人在旁邊的反應就是最真實的背書。',
-        script:'「妳這個頭皮最近比較容易出油對嗎？這款精華可以幫妳調節，不是洗掉油脂，而是讓頭皮自己恢復平衡。長期用下來，我幫妳觀察，通常第三週開始會有感覺。」'
-      },
-      {
-        name:'洗護旅行組', tag:'暖心小禮',
-        why:'送給新客人的小禮物，低門檻試用讓客人產生品牌好感，是口碑行銷的最佳工具。',
-        shoot:'包裝好遞給客人的瞬間拍下來，原音說一句「這是送妳的，回家試試看」。溫度感的畫面比任何廣告都有力，客人看到會想分享。',
-        script:'「第一次來我都會送這個，回家洗一次，如果覺得好用下次告訴我，我幫妳搭配適合的完整組合。不用客氣，這是我想讓妳試試看的心意。」'
-      }
-    ]
-  },
-  edu:{
-    name:'知識專業型設計師', emoji:'🔬',
-    desc:'你用知識和專業建立信任。你的受眾是「認真研究過才來的」，對你有高度信任，也願意為真正好的產品買單。你的推薦對他們來說是「專家背書」。',
-    audience:[
-      {icon:'🔍', title:'先研究、再行動', desc:'他們在追蹤你之前就做過功課了。看過你多篇貼文、比較過幾個設計師，才決定聯繫你——所以一旦來了，意願很強。'},
-      {icon:'🧠', title:'問題比一般客人更精準', desc:'他們不只問「怎麼讓頭髮變好」，他們會問「我這個髮質適合用什麼成分」。這是高信任度的表現，也是你最好的推薦時機。'},
-      {icon:'💎', title:'願意為真正好的東西付費', desc:'他們不追求便宜，追求的是「值得」。你不需要打折，只需要說清楚為什麼值得這個價格。'}
-    ],
-    insight:'你的受眾是「研究型消費者」——在追蹤你之前就做過功課了。他們問的問題更精準，也更願意花時間和金錢在真正有效的方案上。你不需要說服他們，只需要給他們一個好理由。',
-    bars:[{l:'受眾信任度',p:92,c:'#D4C080'},{l:'高單價轉換',p:80,c:'#A05828'},{l:'觸及新受眾',p:52,c:'#8A9E88'}],
-    tips:[
-      {i:'🔬',t:'成分解析短影音',s:'拿著產品對鏡頭說：「這瓶為什麼值得？」30 秒說清楚一個成分的作用。不用完美，像在跟客人解說一樣錄下來就對了，收藏率極高。'},
-      {i:'📋',t:'髮質診斷影片系列',s:'「你是哪種髮質？」開頭丟問題，接著示範怎麼判斷，最後帶出對應解法。每支影片聚焦一種髮質，做成系列，讓受眾自動追更。'},
-      {i:'🎙️',t:'邊工作邊解說 Vlog',s:'施作療程時同步解說在做什麼、為什麼這樣做。不需要後製字幕，客人在旁邊的反應就是最好的「真實背書」，新客信任感立即提升。'}
-    ],
-    products:[
-      {
-        name:'髮質修護療程組', tag:'高單價主力',
-        why:'你的受眾願意為有理有據的高單價產品付費，療程組搭配你的成分說明推薦，成交率最高。',
-        shoot:'施作療程時鏡頭對準手部操作，同步說明每個步驟的用途。30 秒說清楚「為什麼這個步驟不能省」，讓觀眾覺得「原來專業差這裡」。',
-        script:'「妳的髮質現在缺的是蛋白質結構，這組療程會幫妳從內部修補斷裂的角質層。不是表面感覺軟，而是真的強化髮絲。通常做完兩次會有明顯感覺，妳可以摸摸看彈性的差別。」'
-      },
-      {
-        name:'頭皮修護精華', tag:'內容素材佳',
-        why:'成分故事豐富，適合拍成教學內容，產品本身就是內容素材，帶動品牌曝光。',
-        shoot:'拿著產品說明一個核心成分，15 秒說完，配上頭皮特寫鏡頭。結尾提問「你知道你的頭皮屬於哪一種嗎？」留言互動率會大幅提升。',
-        script:'「這款的核心成分是益生菌萃取，它不是殺掉頭皮壞菌，而是幫你建立健康的頭皮菌叢平衡。就像腸道益生菌的邏輯一樣。長期用下來，出油速度和頭皮敏感狀況都會改善。」'
-      },
-      {
-        name:'專業級護色髮品', tag:'好說故事',
-        why:'有科學依據的配方，你能說清楚為什麼值得，不需要打折就能成交。',
-        shoot:'用色票或比色卡呈現「有用 vs 沒用護色品」的顏色維持差異，搭配你的解說。視覺化的科學說明讓專業感立即提升，這種內容收藏率是一般貼文的 3 倍。',
-        script:'「一般護色洗髮精只是在頭髮表面形成薄膜，這款的分子結構可以滲透進角質層，從內鎖住色素分子。所以即使天天洗，顏色流失速度也比一般慢很多。我跟妳說為什麼值得這個價格⋯⋯」'
-      }
-    ]
-  },
-  trend:{
-    name:'話題流行型設計師', emoji:'🔥',
-    desc:'你的社群跟著趨勢走，吸引的是對流行敏感的追蹤者。你有打爆話題的潛力，受眾範圍廣，把流量轉成預約是你最重要的課題。',
-    audience:[
-      {icon:'🔥', title:'被話題吸引、決策很快', desc:'他們不需要太多說服，只需要一個「現在就要做」的理由。稀缺感和時效性，是讓他們從追蹤者變成預約客人的關鍵。'},
-      {icon:'👀', title:'廣泛追蹤、隨時比較', desc:'他們同時在看很多設計師，但不代表不忠誠——只要你持續出現在他們的動態，品牌記憶度就在累積。'},
-      {icon:'📲', title:'高傳播意願', desc:'看到喜歡的造型或話題，他們會主動分享給朋友。你的每一支爆紅影片，背後都有這群人在幫你擴散。'}
-    ],
-    insight:'你的受眾是「趨勢追隨者」——他們關注的不只是你，而是整個流行美髮圈。你的優勢是觸及廣，但競爭也激烈。讓他們從「追蹤」到「預約」的關鍵，是製造緊迫感和獨特性。',
-    bars:[{l:'社群觸及率',p:88,c:'#E07030'},{l:'話題製造力',p:85,c:'#A05828'},{l:'受眾穩定度',p:50,c:'#8A9E88'}],
-    tips:[
-      {i:'🔥',t:'流行預測短影音',s:'比時事快半拍，對著鏡頭說：「下個月這個色會紅，原因是⋯⋯」15 秒說完，不用 B-roll，直接用你的臉和自信說話，建立預言者形象。'},
-      {i:'⏰',t:'限額開放影片',s:'「本月最後 3 個名額，這週五截止」——錄一支 10 秒的限額宣告影片，不需要剪輯，拍完直發。趨勢型受眾決策快，稀缺感是最強的驅動力。'},
-      {i:'🤝',t:'跟拍合作短影音',s:'邀請同業或品牌一起出鏡，各自發到自己的帳號。拍一次，兩個受眾同時看到。格式固定：打招呼 → 一起展示成品 → 各自 CTA，15–30 秒搞定。'}
-    ],
-    products:[
-      {
-        name:'專業級髮色專業品', tag:'話題連結強',
-        why:'跟流行色綁定，你可以用「配合最新流行色」的說法推薦，話題感強，容易在社群上帶動討論。',
-        shoot:'搭配當季最夯髮色的成品照或影片，結尾帶出「這個顏色能維持這麼久，靠的是這瓶」。語速快、節奏強，10–15 秒，讓人看完想轉發。',
-        script:'「今年最夯的奶茶棕，90% 的人一個月就退色了。原因不是染壞，是沒有搭配護色品。這款是我指定用的，搭配我做的色系，顏色可以比一般多撐 3 週。這週還有 2 個名額，要的私訊我。」'
-      },
-      {
-        name:'髮質頭皮修護精華', tag:'客單價提升',
-        why:'追求流行代表染燙頻率高，受損問題嚴重，修護精華是每次服務的自然附加，提升客單價。',
-        shoot:'拍「密集染燙後的頭髮 vs 做修護後的頭髮」對比，15 秒快剪，配上強節奏音樂。重點是「視覺反差」要夠大，讓人停住滑手指的動作。',
-        script:'「妳今年染了幾次？超過 3 次的話，妳的髮質已經在求救了。這款修護精華是我給每個高頻染燙客人的必備，不是保養品，是修復工程。妳現在做，比之後斷髮再補便宜多了。」'
-      },
-      {
-        name:'造型蠟 / 質感噴霧', tag:'高複購率',
-        why:'追流行的客人在乎出門效果，造型品複購率高，是他們自己會回來買的品項。',
-        shoot:'展示「出門前 30 秒造型」的快速教學，鏡頭拍手部動作，不用露臉。配文字：「這個手法讓你的瀏海撐一整天」。實用感強的內容分享率最高。',
-        script:'「妳平常出門前都怎麼整理頭髮？如果要超過 5 分鐘，妳一定需要這個。我教妳一個手法，搭配這款，30 秒讓頭髮有型。下次來我直接示範給妳看，今天先帶一罐試試。」'
-      }
-    ]
-  }
-};
+    };
 
-// ─── State ───────────────────────────────────────────────
-let state = { cur:0, answers:[], scores:{}, contact:{} };
-function resetState(){ state = {cur:0,answers:[],scores:{},contact:{}}; }
+    function HolymakeApp() {
+      const [page, setPage] = useState('intro');
+      const [cur, setCur] = useState(0);
+      const [answers, setAnswers] = useState([]);
+      const [scores, setScores] = useState({});
+      const [toastMsg, setToastMsg] = useState('');
+      const [showToast, setShowToast] = useState(false);
+      const [animating, setAnimating] = useState(false);
+      
+      // IG 截圖相關 State
+      const [showIGModal, setShowIGModal] = useState(false);
+      const [igImage, setIgImage] = useState('');
+      const [isGenerating, setIsGenerating] = useState(false);
+      const shareCardRef = useRef(null);
 
-// ─── Navigation ──────────────────────────────────────────
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0,0);
-}
+      const resetState = () => {
+        setCur(0);
+        setAnswers([]);
+        setScores({});
+      };
 
-// ─── Quiz ────────────────────────────────────────────────
-function startQuiz(){ resetState(); showPage('page-quiz'); renderQ(); }
+      const startQuiz = () => {
+        resetState();
+        switchPage('quiz');
+      };
 
-function renderQ(){
-  const q=QS[state.cur], total=QS.length, L=['A','B','C','D'];
-  document.getElementById('phase-dots').innerHTML = PHASES.map((_,i)=>{
-    const cls = i<q.phase?'done':i===q.phase?'active':'';
-    return `<div class="phase-dot ${cls}"></div>`;
-  }).join('');
-  document.getElementById('phase-label').textContent = `${PHASES[q.phase]} · 第 ${state.cur+1} 題 / ${total}`;
-  document.getElementById('q-eyebrow').textContent = PHASES[q.phase];
-  document.getElementById('q-text').textContent = q.text;
-  document.getElementById('q-counter').textContent = `${state.cur+1} / ${total}`;
-  document.getElementById('q-opts').innerHTML = q.opts.map((o,i)=>`
-    <button class="opt ${state.answers[state.cur]===i?'sel':''}" onclick="pickAnswer(${i})">
-      <span class="opt-letter">${L[i]}</span>
-      <span class="opt-text">${o.t}</span>
-    </button>`).join('');
-  const isLast = state.cur===total-1;
-  const nb = document.getElementById('btn-next');
-  nb.textContent = isLast ? '查看報告 →' : '下一題 →';
-  nb.disabled = state.answers[state.cur]===undefined;
-  document.getElementById('btn-prev').disabled = state.cur===0;
-}
+      const switchPage = (newPage) => {
+        setAnimating(true);
+        setTimeout(() => {
+          setPage(newPage);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          setAnimating(false);
+        }, 300);
+      };
 
-function pickAnswer(i){
-  const prev=state.answers[state.cur], q=QS[state.cur];
-  if(prev!==undefined) Object.entries(q.opts[prev].d).forEach(([k,v])=>{state.scores[k]=(state.scores[k]||0)-v;});
-  state.answers[state.cur]=i;
-  Object.entries(q.opts[i].d).forEach(([k,v])=>{state.scores[k]=(state.scores[k]||0)+v;});
-  renderQ();
-}
+      const pickAnswer = (index) => {
+        const newAnswers = [...answers];
+        const prevAns = newAnswers[cur];
+        const q = QS[cur];
+        const newScores = { ...scores };
 
-function nextQ(){
-  if(state.answers[state.cur]===undefined) return;
-  if(state.cur<QS.length-1){ state.cur++; renderQ(); }
-  else { buildReport(); showPage('page-result'); }
-}
-function prevQ(){ if(state.cur>0){ state.cur--; renderQ(); } }
+        if (prevAns !== undefined) {
+          Object.entries(q.opts[prevAns].d).forEach(([k, v]) => {
+            newScores[k] = (newScores[k] || 0) - v;
+          });
+        }
 
-// ─── Report Form Submit ───────────────────────────────────
-function submitReport(){
-  const name = document.getElementById('r-name').value.trim();
-  const ig   = document.getElementById('r-ig').value.trim();
-  let valid = true;
-  ['r-err-name','r-err-ig'].forEach(id=>document.getElementById(id).style.display='none');
-  if(!name) { document.getElementById('r-err-name').style.display='block'; valid=false; }
-  if(!ig)   { document.getElementById('r-err-ig').style.display='block';   valid=false; }
-  if(!valid) return;
-  state.contact = { name, ig };
-  const btn = document.getElementById('r-submit');
-  btn.disabled = true;
-  document.getElementById('r-sending').style.display='block';
-  sendToSheets({ name, ig }).finally(()=>{
-    document.getElementById('r-sending').style.display='none';
-    contactSales();
-  });
-}
+        newAnswers[cur] = index;
+        Object.entries(q.opts[index].d).forEach(([k, v]) => {
+          newScores[k] = (newScores[k] || 0) + v;
+        });
 
-// ─── Google Sheets ────────────────────────────────────────
-async function sendToSheets(contact){
-  if(!SHEETS_URL||SHEETS_URL==='YOUR_GOOGLE_APPS_SCRIPT_URL') return;
-  const pk=classify();
-  const payload={
-    timestamp: new Date().toISOString(),
-    name:    contact.name,
-    ig:      contact.ig||'',
-    persona: PERSONAS[pk].name,
-    answers: state.answers.map((a,i)=>QS[i].opts[a].t).join(' | '),
-    scores:  JSON.stringify(state.scores)
-  };
-  try {
-    await fetch(SHEETS_URL,{
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-  } catch(e){ console.warn('Sheets 送出失敗',e); }
-}
+        setAnswers(newAnswers);
+        setScores(newScores);
+      };
 
-// ─── Classify ────────────────────────────────────────────
-function classify(){
-  const sc=state.scores;
-  const keys=['visual','warm','edu','trend','reach','booking','loyal','trust','story'];
-  const sorted=keys.filter(k=>sc[k]).sort((a,b)=>(sc[b]||0)-(sc[a]||0));
-  const top=sorted[0]||'visual';
-  if(['visual','warm','edu','trend'].includes(top)) return top;
-  if(top==='reach'||top==='booking') return (sc.warm||0)>=(sc.edu||0)?'visual':'trend';
-  if(top==='loyal'||top==='story')  return 'warm';
-  if(top==='trust') return 'edu';
-  return 'visual';
-}
+      const nextQ = () => {
+        if (answers[cur] === undefined) return;
+        if (cur < QS.length - 1) {
+          setCur(cur + 1);
+        } else {
+          switchPage('result');
+        }
+      };
 
-// ─── Report ──────────────────────────────────────────────
-function buildReport(){
-  const pk=classify(), p=PERSONAS[pk];
-  const name=state.contact.name||'你';
-  document.getElementById('result-body').innerHTML=`
-    <div class="report-header">
-      <div class="report-eyebrow">受眾分析報告 · ${name}</div>
-      <div class="persona-emoji">${p.emoji}</div>
-      <div class="persona-name">${p.name}</div>
-      <div class="persona-desc">${p.desc}</div>
-    </div>
+      const prevQ = () => {
+        if (cur > 0) setCur(cur - 1);
+      };
 
-    <div class="section-label">人格維度分析</div>
-    ${p.bars.map(b=>`
-      <div class="bar-row">
-        <div class="bar-meta"><span>${b.l}</span><span>${b.p}%</span></div>
-        <div class="bar-bg"><div class="bar-fill" data-target="${b.p}" style="background:${b.c}"></div></div>
-      </div>`).join('')}
+      const classify = () => {
+        const sc = scores;
+        const keys = ['visual', 'warm', 'edu', 'trend', 'reach', 'booking', 'loyal', 'trust', 'story'];
+        const sorted = keys.filter(k => sc[k]).sort((a, b) => (sc[b] || 0) - (sc[a] || 0));
+        const top = sorted[0] || 'visual';
 
-    <div class="hr"></div>
-    <div class="section-label">你吸引的觀眾類型</div>
-    <div class="aud-grid">
-      ${p.audience.map(a=>`
-        <div class="aud-card">
-          <div class="aud-icon">${a.icon}</div>
-          <div class="aud-title">${a.title}</div>
-          <div class="aud-desc">${a.desc}</div>
-        </div>`).join('')}
-    </div>
-    <div class="insight-box">
-      <div class="insight-title">受眾洞察</div>
-      <div class="insight-text">${p.insight}</div>
-    </div>
+        if (['visual', 'warm', 'edu', 'trend'].includes(top)) return top;
+        if (top === 'reach' || top === 'booking') return (sc.warm || 0) >= (sc.edu || 0) ? 'visual' : 'trend';
+        if (top === 'loyal' || top === 'story') return 'warm';
+        if (top === 'trust') return 'edu';
+        return 'visual';
+      };
 
-    <div class="hr"></div>
-    <div class="section-label">內容策略建議</div>
-    <div class="insight-box" style="padding-bottom:0">
-      ${p.tips.map(t=>`
-        <div class="tip-row">
-          <div class="tip-icon">${t.i}</div>
-          <div><div class="tip-title">${t.t}</div><div class="tip-desc">${t.s}</div></div>
-        </div>`).join('')}
-    </div>
+      const triggerToast = (msg) => {
+        setToastMsg(msg);
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 2800);
+      };
 
-    <div class="hr"></div>
-    <div class="section-label">為你的受眾推薦的髮品</div>
-    <p style="font-size:.875rem;color:var(--brown-dk);line-height:1.7;margin-bottom:1rem">根據你的受眾類型，這些是最容易在你的客群中產生共鳴、推薦成交率高的品項：</p>
-    ${p.products.map((pr,i)=>`
-      <div class="prod-card ${i===0?'featured':''}">
-        ${i===0?'<div class="prod-feat-label">★ 最高轉換率推薦</div>':''}
-        <div class="prod-head">
-          <div class="prod-name">${pr.name}</div>
-          <span class="tag tag-orange" style="white-space:nowrap;flex-shrink:0">${pr.tag}</span>
+      const copyLink = () => {
+        // 使用相容性極佳的複製方法防止 iFrame 限制
+        const textToCopy = window.location.href;
+        const tempInput = document.createElement('input');
+        tempInput.value = textToCopy;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+          document.execCommand('copy');
+          triggerToast('測驗連結已複製！快去分享吧✨');
+        } catch (err) {
+          triggerToast('複製失敗，請手動複製網址');
+        }
+        document.body.removeChild(tempInput);
+      };
+
+      const saveAsPDF = () => {
+        const prevTitle = document.title;
+        document.title = `社群人格分析報告`;
+        window.print();
+        document.title = prevTitle;
+      };
+
+      // 產生 IG 限時動態卡片
+      const generateIGStory = async () => {
+        if (!shareCardRef.current) return;
+        setIsGenerating(true);
+        try {
+          const canvas = await html2canvas(shareCardRef.current, {
+            scale: 2, 
+            useCORS: true, 
+            backgroundColor: '#FAF8F4',
+            logging: false
+          });
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          setIgImage(dataUrl);
+          setShowIGModal(true);
+        } catch (error) {
+          console.error('截圖失敗', error);
+          triggerToast('圖片生成失敗，請稍後再試');
+        } finally {
+          setIsGenerating(false);
+        }
+      };
+
+      const renderBrandBar = () => (
+        <div className="flex flex-col items-center justify-center p-5 pb-3 relative z-10 no-print">
+          <div className="flex items-center justify-center gap-3 mb-1">
+            {/* 使用外部提供的 JPG Logo，加入 mix-blend-multiply 去除白底影響 */}
+            <img 
+              src="300PX.jpg" 
+              alt="RENATA Logo" 
+              className="h-[24px] md:h-[28px] object-contain mix-blend-multiply" 
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            <span className="text-[#db6014] font-light text-xl">×</span>
+            <div className="text-[1.5rem] leading-none tracking-tight pt-1">
+              <span className="font-serif italic font-bold text-[#db6014]">Holy</span>
+              <span className="font-sans font-bold text-[rgba(255,134,59,.82)]">make</span>
+            </div>
+          </div>
+          <span className="block text-center mt-1 text-[0.65rem] text-[#6B4423] tracking-[0.15em] font-medium opacity-80">
+            專屬社群與髮品銷售指南
+          </span>
         </div>
-        <div class="prod-why"><strong style="font-size:.75rem;color:var(--sage);letter-spacing:.04em;text-transform:uppercase">為什麼適合你的客人：</strong><br>${pr.why}</div>
-        <div class="prod-detail-block">
-          <div class="prod-detail-label">📸 拍攝建議</div>
-          <div class="prod-detail-text">${pr.shoot}</div>
+      );
+
+      const renderIntro = () => (
+        <div className={`container max-w-[560px] mx-auto px-5 pt-8 pb-20 transition-all duration-300 ${animating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+          <div className="text-center">
+            <div className="font-serif text-[1.65rem] md:text-3xl font-bold text-[#2C1A0A] tracking-wide mb-3 leading-snug">
+              美髮設計師社群人格分析
+            </div>
+            <div className="text-[0.75rem] text-[#db6014] mb-6 tracking-widest font-bold uppercase">
+              RENATA × Holymake 為你量身打造
+            </div>
+            <p className="text-[0.9375rem] text-[#6B4423] leading-relaxed mb-2">
+              6 道題，找出你的社群人格、你吸引的受眾類型，<br />以及最適合你客群的髮品推薦方向。
+            </p>
+            <p className="text-[0.8125rem] text-[#8A9E88] mb-7">⏱ 約 2 分鐘 &nbsp;·&nbsp; 6 題 &nbsp;·&nbsp; 3 個分析維度</p>
+            
+            <div className="flex gap-2 justify-center flex-wrap mb-8">
+              <span className="inline-block py-1 px-3 rounded-full text-xs font-medium bg-[#FBF0E8] text-[#A05828]">社群人格</span>
+              <span className="text-[0.8rem] text-[#8A9E88] self-center">→</span>
+              <span className="inline-block py-1 px-3 rounded-full text-xs font-medium bg-[#EBF0EA] text-[#4A6849]">吸引的觀眾類型</span>
+              <span className="text-[0.8rem] text-[#8A9E88] self-center">→</span>
+              <span className="inline-block py-1 px-3 rounded-full text-xs font-medium bg-[#F5F0E8] text-[#6B4423] border border-[#E8DDD0]">髮品推薦方向</span>
+            </div>
+            
+            <button 
+              onClick={startQuiz}
+              className="w-full p-[14px] text-base border-none rounded-lg bg-[#db6014] text-white font-medium cursor-pointer transition-all duration-150 hover:bg-[#A05828] active:scale-95"
+            >
+              開始分析
+            </button>
+            
+            <p className="text-xs text-[#8A9E88] mt-6 font-medium tracking-wide">
+              Powered by <strong className="text-[#6B4423]">RENATA</strong> × Holymake
+            </p>
+          </div>
         </div>
-        <div class="prod-detail-block">
-          <div class="prod-detail-label">💬 推薦話術</div>
-          <div class="prod-detail-text">${pr.script}</div>
+      );
+
+      const renderQuiz = () => {
+        const q = QS[cur];
+        const L = ['A', 'B', 'C', 'D'];
+        const isLast = cur === QS.length - 1;
+
+        return (
+          <div className={`container max-w-[560px] mx-auto px-5 pt-10 pb-20 transition-all duration-300 ${animating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+            <div className="mb-8">
+              <div className="flex gap-1.5 mb-2">
+                {PHASES.map((_, i) => (
+                  <div key={i} className={`h-0.5 flex-1 rounded transition-colors duration-400 ${i < q.phase ? 'bg-[#db6014]' : i === q.phase ? 'bg-[#ff863b]' : 'bg-[#E8DDD0]'}`}></div>
+                ))}
+              </div>
+              <div className="text-[0.6875rem] text-[#A05828] tracking-wider uppercase">
+                {PHASES[q.phase]} · 第 {cur + 1} 題 / {QS.length}
+              </div>
+            </div>
+
+            <div className="text-[0.6875rem] text-[#db6014] tracking-[0.1em] uppercase mb-2 font-medium">
+              {PHASES[q.phase]}
+            </div>
+            <div className="font-serif text-[1.1875rem] md:text-[1.25rem] leading-relaxed text-[#2C1A0A] mb-7">
+              {q.text}
+            </div>
+
+            <div className="flex flex-col gap-2.5">
+              {q.opts.map((o, i) => {
+                const isSel = answers[cur] === i;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => pickAnswer(i)}
+                    className={`flex items-start gap-3 p-[13px_16px] border rounded-[14px] text-left cursor-pointer transition-all duration-150 active:scale-[0.98]
+                      ${isSel ? 'border-[#db6014] bg-[#FBF0E8]' : 'border-[#E8DDD0] bg-white hover:border-[#db6014] hover:bg-[#FBF0E8]'}
+                    `}
+                  >
+                    <span className="text-[0.6875rem] font-medium text-[#8A9E88] min-w-[18px] pt-[3px] tracking-wide">{L[i]}</span>
+                    <span className="text-[0.9375rem] text-[#2C1A0A] leading-snug">{o.t}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-between items-center mt-6">
+              <button 
+                onClick={prevQ} 
+                disabled={cur === 0}
+                className="px-5 py-2.5 border border-[#E8DDD0] rounded-lg bg-transparent text-[0.875rem] text-[#6B4423] transition-all hover:bg-[#F5F0E8] hover:border-[#db6014] disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                ← 上一題
+              </button>
+              <span className="text-[0.8125rem] text-[#8A9E88]">{cur + 1} / {QS.length}</span>
+              <button 
+                onClick={nextQ} 
+                disabled={answers[cur] === undefined}
+                className="px-6 py-2.5 border-none rounded-lg bg-[#db6014] text-white text-[0.9375rem] font-medium transition-all hover:bg-[#A05828] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {isLast ? '查看報告 →' : '下一題 →'}
+              </button>
+            </div>
+          </div>
+        );
+      };
+
+      const renderResult = () => {
+        const pk = classify();
+        const p = PERSONAS[pk];
+
+        const AnimatedBar = ({ label, percentage, color }) => {
+          const [width, setWidth] = useState(0);
+          useEffect(() => {
+            const timer = setTimeout(() => setWidth(percentage), 150);
+            return () => clearTimeout(timer);
+          }, [percentage]);
+
+          return (
+            <div className="mb-[13px]">
+              <div className="flex justify-between text-[0.8125rem] text-[#6B4423] mb-1">
+                <span>{label}</span><span>{percentage}%</span>
+              </div>
+              <div className="h-1 bg-[#E8DDD0] rounded-full overflow-hidden">
+                <div 
+                  className="h-full rounded-full transition-all duration-1000 ease-out print:!bg-current"
+                  style={{ width: `${width}%`, backgroundColor: color, color: color }}
+                />
+              </div>
+            </div>
+          );
+        };
+
+        return (
+          <div className={`container max-w-[560px] mx-auto px-5 pt-10 pb-20 transition-all duration-300 ${animating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'} print:p-4 print:max-w-full`}>
+            {/* Header */}
+            <div className="bg-[#F5F0E8] rounded-[14px] p-6 mb-5 border border-[#E8DDD0] relative overflow-hidden">
+              <div className="absolute -bottom-3 -right-2 text-[2.5rem] font-serif font-bold text-[#db6014] opacity-[0.06] pointer-events-none select-none tracking-widest leading-none">
+                RENATA<br/>Holymake
+              </div>
+              <div className="text-[0.6875rem] text-[#db6014] tracking-[0.1em] uppercase mb-2 font-medium">
+                受眾分析報告
+              </div>
+              <div className="text-3xl mb-1.5">{p.emoji}</div>
+              <div className="font-serif text-2xl text-[#2C1A0A] mb-2">{p.name}</div>
+              <div className="text-[0.9rem] text-[#6B4423] leading-relaxed relative z-10">{p.desc}</div>
+            </div>
+
+            {/* IG 分享按鈕 (顯示在結果頁最上方) */}
+            <div className="mb-8 print:hidden">
+              <button
+                onClick={generateIGStory}
+                disabled={isGenerating}
+                className="w-full py-4 border-none rounded-xl bg-gradient-to-r from-[#db6014] to-[#ff863b] text-white text-[1.05rem] font-bold cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_15px_rgba(219,96,20,0.3)] transition-transform active:scale-95 disabled:opacity-70"
+              >
+                <span className="text-[1.3rem]">📸</span> {isGenerating ? '正在產生專屬卡片...' : '分享我的測驗結果到 IG'}
+              </button>
+            </div>
+
+            {/* 隱藏的 IG 分享卡片渲染區塊 - TFT 溫暖手繪圖鑑風 */}
+            <div className="render-container" aria-hidden="true">
+              <div ref={shareCardRef} className="w-[480px] h-[853px] bg-[#FFF9E5] flex flex-col items-center relative box-border overflow-hidden font-sans p-6 pt-12">
+                
+                {/* 背景紙張雜訊質感 */}
+                <div className="absolute inset-0 opacity-[0.04] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'300\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.75\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'300\' height=\'300\' filter=\'url(%23n)\'/%3E%3C/svg%3E")' }}></div>
+
+                {/* 頂部：動物圖像與標題 */}
+                <div className="flex w-full items-center justify-center gap-5 mb-6 relative z-10 px-2">
+                  {/* 動物圖騰 (不規則 Blob 形狀) */}
+                  <div className="w-[140px] h-[140px] bg-[#2C1A0A] flex items-center justify-center text-[5.5rem] shadow-[4px_6px_0px_rgba(0,0,0,0.15)] relative shrink-0" style={{ borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%' }}>
+                    {p.animalEmoji}
+                    <div className="absolute -bottom-1 -right-2 text-4xl opacity-80">✨</div>
+                  </div>
+                  
+                  <div className="flex flex-col flex-1 mt-2">
+                    <div className="text-[0.85rem] font-bold text-[#6B4423] mb-2 tracking-wider">你的社群人格顯示為 ...</div>
+                    
+                    <div className="relative inline-block mb-3">
+                       {/* 文字背後的筆刷高光效果 */}
+                       <div className="absolute bottom-1 left-[-5px] w-[105%] h-[20px] bg-white z-0 rounded-full rotate-[-2deg]"></div>
+                       <div className="font-serif text-[2.8rem] font-black text-[#2C1A0A] leading-none relative z-10 whitespace-nowrap">
+                         {p.animalName}
+                       </div>
+                    </div>
+                    
+                    <div className="text-[0.75rem] font-bold text-[#8A9E88] tracking-widest whitespace-nowrap">
+                      {p.animalHashtags.join(' ')}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 中間：紙張文字卡片區塊 */}
+                <div className="w-[96%] bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative z-10 flex flex-col p-8 pb-10 mt-2 border border-[#F0E6D2]">
+                  
+                  {/* 頂部裝飾孔洞 (模擬剪貼紙張) */}
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-4 opacity-20">
+                     {[...Array(7)].map((_, i) => <div key={i} className="w-2.5 h-2.5 rounded-full bg-[#db6014]"></div>)}
+                  </div>
+
+                  <div className="text-center text-[1.1rem] font-bold text-[#2C1A0A] mt-6 mb-5">
+                    世界上約有 <span className="text-[2.2rem] text-[#4A6849] mx-1 font-black">{p.rarity}%</span> 的人和你一樣！
+                  </div>
+
+                  <div className="text-[0.95rem] text-[#6B4423] leading-[1.8] mb-6 text-justify">
+                    {p.desc}
+                  </div>
+
+                  {/* 虛線分隔線與小標籤 */}
+                  <div className="w-full border-t-[2px] border-dashed border-[#E8DDD0] my-4 relative">
+                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-4 text-[#8A9E88] text-[0.85rem] font-bold tracking-widest whitespace-nowrap">
+                        容易吸引到這三種人
+                     </div>
+                  </div>
+
+                  {/* 圖鑑排列：吸引的受眾 */}
+                  <div className="flex justify-between items-start gap-3 mt-5">
+                    {p.audience.map((a, i) => (
+                      <div key={i} className="flex flex-col items-center flex-1">
+                        <div className="w-[65px] h-[65px] bg-[#FFF9E5] rounded-full flex items-center justify-center text-[2.2rem] mb-2 shadow-sm border border-[#F0E6D2]">
+                           {a.icon}
+                        </div>
+                        <div className="text-[0.75rem] font-bold text-[#2C1A0A] text-center leading-[1.4] break-words w-full px-1">
+                           {a.title}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 底部：品牌宣告與行動呼喚 */}
+                <div className="absolute bottom-0 left-0 w-full px-8 py-7 flex justify-between items-center z-10">
+                   <div className="flex flex-col">
+                      <div className="text-[1.2rem] font-black text-[#db6014] tracking-wider leading-none">RENATA</div>
+                      <div className="text-[0.7rem] font-bold text-[#6B4423] tracking-[0.1em] mt-1">× Holymake</div>
+                   </div>
+                   <div className="text-right flex flex-col items-end">
+                      <div className="text-[0.75rem] font-bold text-[#2C1A0A] tracking-wider bg-white/60 px-3 py-1.5 rounded-lg border border-[#F0E6D2]">
+                        長按圖片儲存結果 👆
+                      </div>
+                   </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div className="font-serif text-[1.35rem] md:text-[1.5rem] font-bold text-[#2C1A0A] border-l-[6px] border-[#db6014] pl-4 py-1.5 mb-5 bg-gradient-to-r from-[#FBF0E8] to-transparent">
+              人格維度分析
+            </div>
+            {p.bars.map((b, i) => (
+              <AnimatedBar key={i} label={b.l} percentage={b.p} color={b.c} />
+            ))}
+
+            <hr className="border-t border-[#E8DDD0] my-6" />
+
+            <div className="font-serif text-[1.35rem] md:text-[1.5rem] font-bold text-[#2C1A0A] border-l-[6px] border-[#db6014] pl-4 py-1.5 mb-5 bg-gradient-to-r from-[#FBF0E8] to-transparent">
+              你吸引的觀眾類型
+            </div>
+            <div className="flex flex-col gap-2.5 mb-5 md:grid md:grid-cols-2">
+              {p.audience.map((a, i) => (
+                <div key={i} className={`bg-white border border-[#E8DDD0] rounded-lg p-3.5 flex gap-3 items-start ${i === 2 ? 'md:col-span-2' : ''}`}>
+                  <div className="text-xl min-w-[24px] pt-px">{a.icon}</div>
+                  <div>
+                    <div className="text-[0.875rem] font-medium text-[#2C1A0A] mb-1">{a.title}</div>
+                    <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed">{a.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-white border border-[#E8DDD0] rounded-[14px] p-4 mb-5">
+              <div className="text-[0.875rem] font-medium text-[#2C1A0A] mb-1">受眾洞察</div>
+              <div className="text-[0.875rem] text-[#6B4423] leading-relaxed">{p.insight}</div>
+            </div>
+
+            <hr className="border-t border-[#E8DDD0] my-6" />
+
+            <div className="font-serif text-[1.35rem] md:text-[1.5rem] font-bold text-[#2C1A0A] border-l-[6px] border-[#db6014] pl-4 py-1.5 mb-5 bg-gradient-to-r from-[#FBF0E8] to-transparent">
+              內容策略建議
+            </div>
+            <div className="bg-white border border-[#E8DDD0] rounded-[14px] px-5 py-2 mb-5">
+              {p.tips.map((t, i) => (
+                <div key={i} className="flex gap-3 items-start py-3 border-b border-[#E8DDD0] last:border-b-0">
+                  <div className="text-lg min-w-[26px]">{t.i}</div>
+                  <div>
+                    <div className="text-[0.875rem] font-medium text-[#2C1A0A] mb-1">{t.t}</div>
+                    <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed">{t.s}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <hr className="border-t border-[#E8DDD0] my-6 print:hidden" />
+
+            <div className="font-serif text-[1.35rem] md:text-[1.5rem] font-bold text-[#2C1A0A] border-l-[6px] border-[#db6014] pl-4 py-1.5 mb-5 bg-gradient-to-r from-[#FBF0E8] to-transparent print:hidden">
+              為你的受眾推薦的髮品
+            </div>
+            <p className="text-[0.875rem] text-[#6B4423] leading-relaxed mb-4 print:hidden">
+              根據你的受眾類型，這些是最容易在你的客群中產生共鳴、推薦成交率高的品項：
+            </p>
+            
+            <div className="print:hidden">
+              {p.products.map((pr, i) => (
+                <div key={i} className={`bg-white border rounded-[14px] p-4 mb-2.5 ${i === 0 ? 'border-[1.5px] border-[#db6014]' : 'border-[#E8DDD0]'}`}>
+                  {i === 0 && <div className="text-[0.6875rem] font-medium text-[#db6014] mb-2 tracking-wider">★ 最高轉換率推薦</div>}
+                  
+                  <div className="flex justify-between items-start gap-2 mb-1.5">
+                    <div className="text-[0.9375rem] font-medium text-[#2C1A0A]">{pr.name}</div>
+                    <span className="inline-block py-1 px-2.5 rounded-full text-xs font-medium bg-[#FBF0E8] text-[#A05828] whitespace-nowrap shrink-0">
+                      {pr.tag}
+                    </span>
+                  </div>
+                  
+                  <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed mb-2.5">
+                    <strong className="text-[0.75rem] text-[#8A9E88] tracking-wider uppercase block mb-0.5">為什麼適合你的客人：</strong>
+                    {pr.why}
+                  </div>
+                  
+                  <div className="bg-[#FAF8F4] rounded-lg p-3 mb-2">
+                    <div className="text-[0.6875rem] font-medium tracking-wider uppercase text-[#8A9E88] mb-1">📸 拍攝建議</div>
+                    <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed whitespace-pre-wrap">{pr.shoot}</div>
+                  </div>
+                  
+                  <div className="bg-[#FAF8F4] rounded-lg p-3 mb-3">
+                    <div className="text-[0.6875rem] font-medium tracking-wider uppercase text-[#8A9E88] mb-1">💬 推薦話術</div>
+                    <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed whitespace-pre-wrap">{pr.script}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <hr className="border-t border-[#E8DDD0] my-6 print:hidden" />
+
+            <div className="font-serif text-[1.35rem] md:text-[1.5rem] font-bold text-[#2C1A0A] border-l-[6px] border-[#db6014] pl-4 py-1.5 mb-5 bg-gradient-to-r from-[#FBF0E8] to-transparent print:hidden">
+              你可以和業務討論的 3 件事
+            </div>
+            <div className="flex flex-col gap-2.5 mb-2 print:hidden">
+              {[
+                { t: '你的客群最容易接受哪一類髮品？', d: '先不要全品項進貨，從最容易被你的受眾理解的品項開始。' },
+                { t: '這個品項要怎麼搭配服務銷售？', d: '例如染後護色、燙後修護、頭皮保養、居家維持。' },
+                { t: '這個品項要怎麼拍成內容？', d: '不只是賣產品，而是讓客人看懂：「我為什麼需要它？」' }
+              ].map((item, i) => (
+                <div key={i} className="flex gap-3.5 items-start bg-white border border-[#E8DDD0] rounded-[14px] p-4">
+                  <div className="w-7 h-7 rounded-full bg-[#db6014] text-white text-[0.875rem] font-medium flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </div>
+                  <div>
+                    <div className="text-[0.9375rem] font-medium text-[#2C1A0A] mb-1">{item.t}</div>
+                    <div className="text-[0.8125rem] text-[#6B4423] leading-relaxed">{item.d}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <hr className="border-t border-[#E8DDD0] my-6 print:hidden" />
+
+            {/* CTA Blocks (傳給業務) */}
+            <div className="bg-[#2C1A0A] rounded-[14px] p-6 mt-3 relative overflow-hidden print:hidden">
+              <div className="absolute w-[200px] h-[200px] top-[-80px] right-[-40px] pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(219,96,20,.2), transparent 70%)' }}></div>
+              
+              <div className="font-serif text-[1.25rem] font-bold text-white leading-snug mb-3 relative z-10 text-center">
+                想把這份結果變成實際銷售內容？
+              </div>
+              <div className="text-[0.875rem] text-[#E8DDD0] leading-relaxed mb-6 relative z-10">
+                你可以先和業務討論適合的髮品組合，再由吼莉協助規劃社群內容與短影音拍攝，讓產品不只是被介紹，而是被客人看懂、被需要。
+              </div>
+              
+              <div className="flex flex-col gap-3 relative z-10">
+                <button 
+                  onClick={saveAsPDF}
+                  className="w-full py-3.5 border border-[#db6014] rounded-lg bg-[#db6014] text-[0.9375rem] font-medium text-white cursor-pointer flex items-center justify-center gap-2 transition-all hover:bg-[#A05828] no-print"
+                >
+                  <span className="text-[1.1rem]">📄</span> 儲存報告，並傳給 RENATA 業務
+                </button>
+              </div>
+            </div>
+
+            {/* 推廣與複製連結 */}
+            <div className="mt-8 mb-2 print:hidden text-center">
+              <div className="text-[1.05rem] font-bold text-[#2C1A0A] mb-1">喜歡這份分析嗎？</div>
+              <div className="text-[0.875rem] text-[#6B4423] mb-4">分享給你的朋友，讓他們也測測看吧！</div>
+              <button 
+                onClick={copyLink}
+                className="w-full py-4 border-2 border-[#db6014] rounded-xl bg-[#FBF0E8] text-[#db6014] text-[1.05rem] font-bold cursor-pointer flex items-center justify-center gap-2 transition-all hover:bg-[#db6014] hover:text-white"
+              >
+                <span className="text-[1.2rem]">🔗</span> 複製測驗連結，分享給朋友
+              </button>
+            </div>
+
+            {/* Footer & Restart */}
+            <div className="text-center mt-6 print:hidden">
+              <p className="text-xs text-[#8A9E88] mb-2 font-medium tracking-wide">
+                Powered by <strong className="text-[#6B4423]">RENATA</strong> × Holymake
+              </p>
+            </div>
+            <button 
+              onClick={startQuiz}
+              className="w-full py-3 border border-[#E8DDD0] rounded-lg bg-transparent text-[0.875rem] text-[#6B4423] cursor-pointer mt-3 transition-all hover:bg-[#F5F0E8] hover:border-[#db6014] hover:text-[#A05828] no-print"
+            >
+              ↺ 重新分析
+            </button>
+          </div>
+        );
+      };
+
+      return (
+        <div className="relative z-10 min-h-screen pb-10">
+          {renderBrandBar()}
+          {page === 'intro' && renderIntro()}
+          {page === 'quiz' && renderQuiz()}
+          {page === 'result' && renderResult()}
+          
+          {/* Toast 通知 */}
+          <div 
+            className={`fixed bottom-8 left-1/2 -translate-x-1/2 bg-[#2C1A0A] text-white px-6 py-3 rounded-full text-[0.9375rem] font-medium shadow-xl z-[999] pointer-events-none whitespace-nowrap transition-transform duration-300 ${showToast ? 'translate-y-0' : 'translate-y-[100px]'}`}
+          >
+            {toastMsg}
+          </div>
+
+          {/* IG 截圖預覽 Modal */}
+          {showIGModal && (
+            <div className="fixed inset-0 bg-black/85 z-[99999] flex flex-col items-center justify-center p-6 opacity-100 transition-opacity">
+              <div className="w-full max-w-[360px] relative animate-[fadeUp_0.3s_ease-out]">
+                 <button 
+                   onClick={() => setShowIGModal(false)} 
+                   className="absolute -top-12 right-0 text-white text-4xl opacity-80 hover:opacity-100"
+                 >
+                   &times;
+                 </button>
+                 <div className="text-white text-center text-[0.9375rem] font-bold mb-4 tracking-widest animate-[fadeUp_1s_infinite_alternate] bg-black/50 py-2 rounded-full backdrop-blur-sm border border-white/20">
+                   ✨ 長按下方圖片即可儲存 / 分享 ✨
+                 </div>
+                 <img src={igImage} alt="IG Share Card" className="w-full h-auto rounded-2xl shadow-2xl border-4 border-white" />
+                 <div className="mt-5 text-center text-white/60 text-xs">
+                   儲存後就可以到 IG 限時動態發佈囉！
+                 </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>`).join('')}
+      );
+    }
 
-    <div class="hr"></div>
-    <div class="section-label">你可以和業務討論的 3 件事</div>
-    <div class="discuss-block">
-      <div class="discuss-item">
-        <div class="discuss-num">1</div>
-        <div class="discuss-body">
-          <div class="discuss-title">你的客群最容易接受哪一類髮品？</div>
-          <div class="discuss-desc">先不要全品項進貨，從最容易被你的受眾理解的品項開始。</div>
-        </div>
-      </div>
-      <div class="discuss-item">
-        <div class="discuss-num">2</div>
-        <div class="discuss-body">
-          <div class="discuss-title">這個品項要怎麼搭配服務銷售？</div>
-          <div class="discuss-desc">例如染後護色、燙後修護、頭皮保養、居家維持。</div>
-        </div>
-      </div>
-      <div class="discuss-item">
-        <div class="discuss-num">3</div>
-        <div class="discuss-body">
-          <div class="discuss-title">這個品項要怎麼拍成內容？</div>
-          <div class="discuss-desc">不只是賣產品，而是讓客人看懂：「我為什麼需要它？」</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="hr"></div>
-
-    <div class="final-cta-block">
-      <div class="final-cta-title">想把這份結果變成實際銷售內容？</div>
-      <div class="final-cta-sub">你可以先和業務討論適合的髮品組合，再由吼莉協助規劃社群內容與短影音拍攝，讓產品不只是被介紹，而是被客人看懂、被需要。</div>
-      <div class="final-cta-btns">
-        <button class="final-btn-pdf" onclick="saveAsPDF()">
-          <span style="margin-right:5px">📄</span> 儲存報告，傳給業務和業務一起討論
-        </button>
-        <button class="final-btn-line" onclick="openLine()">
-          <span style="margin-right:5px">💬</span> 聯繫吼莉，規劃內容方向
-        </button>
-      </div>
-    </div>
-
-    <div style="text-align:center;margin-top:1.25rem">
-      <p style="font-size:.75rem;color:var(--sage);margin-bottom:.5rem">
-        Powered by RENATA × <span class="logo-holy" style="font-size:inherit">Holy</span><span class="logo-make" style="font-size:inherit">make</span>
-      </p>
-    </div>
-    <button class="restart-btn" onclick="startQuiz()">↺ 重新分析</button>
-  `;
-  setTimeout(()=>{
-    document.querySelectorAll('.bar-fill[data-target]').forEach(el=>{
-      el.style.width=el.getAttribute('data-target')+'%';
-    });
-  },150);
-}
-
-// ─── CONFIG: 換成正確的 LINE@ 連結 ──────────────────────
-const LINE_URL = 'https://lin.ee/YF1AjRg';
-// ────────────────────────────────────────────────────────
-
-// ─── CTAs ─────────────────────────────────────────────────
-function openLine(){
-  const pk = classify();
-  const persona = PERSONAS[pk].name;
-  const msg = `嗨！我剛完成了社群人格分析測驗\n人格類型：${persona}\n\n想了解更多關於社群與內容行銷的規劃 🙌`;
-  window.open(`${LINE_URL}?text=${encodeURIComponent(msg)}`, '_blank');
-}
-
-function contactSales(productName){
-  const name = state.contact.name || '設計師';
-  const ig   = state.contact.ig   || '';
-  const pk   = classify();
-  const persona  = PERSONAS[pk].name;
-  const igText   = ig ? `\nIG：${ig}` : '';
-  const msg = productName
-    ? `嗨！我是 ${name}${igText}\n人格類型：${persona}\n\n對「${productName}」有興趣，想索取拍攝企劃與內容規劃 🙌`
-    : `嗨！我是 ${name}${igText}\n人格類型：${persona}\n\n想索取完整的拍攝企劃與內容規劃 🙌`;
-  window.open(`${LINE_URL}?text=${encodeURIComponent(msg)}`, '_blank');
-}
-
-function getScript(productName, pk){
-  const scripts={
-    visual:
-`【短影音腳本架構：視覺衝擊型】
-▸ 開頭（前 3 秒）：直接切入成品畫面，不說話，讓畫面說話。
-▸ 過程（4–12 秒）：快剪操作細節——上色、吹整、收尾，專注手部動作。
-▸ 結尾（13–20 秒）：鏡頭拉遠，完整呈現造型，停頓 1 秒讓觀眾看清楚。
-▸ 字卡收尾：「做完帶走一瓶「${productName}」，讓顏色再撐兩週。」
-
-💡 拍攝重點：不需要對鏡頭說話，音樂選帶節奏感的，剪輯跟著節拍走就好。`,
-
-    warm:
-`【短影音腳本架構：真實溫度型】
-▸ 開頭（前 3 秒）：原音收錄，你跟客人說話的聲音直接當開場。
-▸ 中間（4–15 秒）：邊做邊自然介紹「${productName}」，像平常解說一樣，不用背稿。
-▸ 客人反應（16–25 秒）：讓客人說一句話就好，不用引導，真實反應最有力。
-▸ 結尾：你對鏡頭笑一下，不用說台詞。
-
-💡 拍攝重點：手機架好就拍，不修也沒關係。真實感是你最大的武器。`,
-
-    edu:
-`【短影音腳本架構：知識信任型】
-▸ 開頭（前 3 秒）：拋問題——「妳知道妳這個髮質最缺的是什麼嗎？」
-▸ 痛點（4–10 秒）：說出客人現在的困境，讓她在心裡點頭「對對對」。
-▸ 解方（11–20 秒）：帶入「${productName}就是針對這個設計的」，說一個關鍵成分或原理。
-▸ 收尾（21–25 秒）：「想知道怎麼用？留言『想了解』給我。」
-
-💡 拍攝重點：不用硬背台詞，像平常跟客人解說一樣自然錄下即可。`,
-
-    trend:
-`【短影音腳本架構：話題流行型】
-▸ 開頭（前 3 秒）：直接說結論——「這個月最夯的髮色，90% 的人都少做這一步。」
-▸ 反差（4–10 秒）：對比有用跟沒用「${productName}」的顏色維持差異，視覺要明顯。
-▸ 行動（11–18 秒）：「本月還有 3 個名額，這週五截止。」語速稍快，製造緊迫感。
-▸ 結尾：直接說「私訊我預約」，不用客氣。
-
-💡 拍攝重點：語速比平常快 20%，眼神直視鏡頭，自信比完美重要。`
-  };
-  navigator.clipboard.writeText(scripts[pk]||'').catch(()=>{});
-  showToast('腳本已複製，拿去錄影吧 🎬');
-}
-
-function saveAsPDF(){
-  const name = state.contact.name || '受眾分析報告';
-  // 設定列印標題
-  const prevTitle = document.title;
-  document.title = `${name} — 社群人格分析報告｜RENATA × Holymake`;
-  // 隱藏不需要列印的元素
-  document.querySelectorAll('.save-pdf-btn, .restart-btn, .brand-bar').forEach(el => el.classList.add('no-print'));
-  window.print();
-  // 還原
-  document.title = prevTitle;
-  document.querySelectorAll('.no-print').forEach(el => el.classList.remove('no-print'));
-}
-
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2800);
-}
-</script>
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<HolymakeApp />);
+  </script>
 </body>
 </html>
