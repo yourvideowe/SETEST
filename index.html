@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>社群人格分析｜RENATA × Holymake</title>
+<title>美髮師社群人格測驗｜RENATA × Holymake</title>
+<meta name="description" content="6 題測出你的美髮師社群人格，生成可分享結果卡，找到適合你的社群內容規劃方向。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
@@ -299,6 +300,219 @@ body {
   .share-section, .cta-block, .share-link-section, .btn-restart, .brand-bar { display: none !important; }
   body { background: white; }
 }
+
+
+/* ─────────────────────────────────────────────
+   HOLYMAKE UX UPGRADE v2：提高點擊、遊玩與分享意願
+   ───────────────────────────────────────────── */
+:root{
+  --shadow-soft: 0 14px 36px rgba(44,26,10,.10);
+  --shadow-press: 0 8px 20px rgba(219,96,20,.22);
+  --gold: #D8A24A;
+}
+html { scroll-behavior: smooth; }
+body{
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255,134,59,.18), transparent 28%),
+    radial-gradient(circle at 90% 14%, rgba(138,158,136,.16), transparent 30%),
+    linear-gradient(180deg, #FFF8EF 0%, #FAF8F4 46%, #F6EFE7 100%);
+  overflow-x:hidden;
+}
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:-1;
+  background-image:
+    linear-gradient(120deg, rgba(255,255,255,.38) 0 1px, transparent 1px),
+    radial-gradient(circle at 60% 20%, rgba(216,162,74,.12), transparent 18%);
+  background-size: 18px 18px, 100% 100%; opacity:.55;
+}
+.app{ max-width: 560px; padding: 0 18px 96px; }
+.brand-bar{
+  border-bottom: 1px solid rgba(232,221,208,.72);
+  background: rgba(250,248,244,.82);
+}
+.brand-row{
+  background: rgba(255,255,255,.70); border:1px solid rgba(232,221,208,.85);
+  padding:6px 12px; border-radius:999px; box-shadow:0 6px 18px rgba(44,26,10,.05);
+}
+.brand-sub{ color: var(--orange); opacity:.9; }
+
+/* intro：從說明頁變成「想測」的入口 */
+.intro{ text-align:left; padding-top:22px; }
+.intro-hero{
+  position:relative; overflow:hidden; border-radius:28px; padding:26px 22px 22px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.92), rgba(251,240,232,.94)),
+    radial-gradient(circle at 92% 0%, rgba(255,134,59,.22), transparent 34%);
+  border:1px solid rgba(232,221,208,.95); box-shadow: var(--shadow-soft);
+}
+.intro-hero::after{
+  content:'✦'; position:absolute; right:18px; top:16px; color:rgba(219,96,20,.24);
+  font-size:5rem; line-height:1; transform:rotate(12deg);
+}
+.intro-kicker{
+  display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px;
+  background:#fff; border:1px solid var(--border); color:var(--orange);
+  font-size:.72rem; letter-spacing:.08em; font-weight:800; margin-bottom:14px;
+}
+.intro-title{
+  font-size: clamp(2rem, 7vw, 2.65rem); letter-spacing:-.04em; line-height:1.15;
+  margin-bottom:12px; color:var(--brown-deep);
+}
+.intro-title .accent{ color:var(--orange); position:relative; white-space:nowrap; }
+.intro-title .accent::after{
+  content:''; position:absolute; left:0; right:0; bottom:.08em; height:.25em;
+  background:rgba(255,134,59,.18); z-index:-1; border-radius:999px;
+}
+.intro-sub{ text-align:left; font-size:.78rem; margin-bottom:14px; }
+.intro-desc{ font-size:.96rem; line-height:1.75; margin-bottom:14px; }
+.intro-desc strong{ color:var(--brown-deep); }
+.intro-meta{
+  display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 18px; color:var(--brown-mid);
+}
+.intro-meta span{
+  display:inline-flex; align-items:center; gap:4px; padding:7px 10px; border-radius:999px;
+  background:rgba(255,255,255,.74); border:1px solid rgba(232,221,208,.88); font-size:.75rem;
+}
+.persona-preview{
+  display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; margin:18px 0;
+}
+.persona-chip{
+  min-height:74px; border-radius:18px; background:rgba(255,255,255,.78); border:1px solid var(--border);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  box-shadow:0 8px 18px rgba(44,26,10,.06); transform:translateZ(0);
+}
+.persona-chip b{ font-size:1.55rem; line-height:1; }
+.persona-chip span{ font-size:.68rem; color:var(--brown-mid); font-weight:700; }
+.value-row{ display:grid; grid-template-columns:1fr; gap:8px; margin:18px 0 22px; }
+.value-card{
+  display:flex; gap:10px; align-items:flex-start; padding:11px 12px; border-radius:16px;
+  background:rgba(250,248,244,.82); border:1px solid rgba(232,221,208,.9);
+}
+.value-card .v-icon{ width:30px; height:30px; display:flex; align-items:center; justify-content:center;
+  border-radius:10px; background:var(--orange-pale); flex-shrink:0; }
+.value-card b{ display:block; font-size:.86rem; margin-bottom:2px; }
+.value-card span{ display:block; font-size:.76rem; color:var(--brown-mid); line-height:1.5; }
+.btn-primary{
+  position:relative; overflow:hidden; border-radius:18px; padding:17px 18px; font-size:1.04rem;
+  background:linear-gradient(135deg, var(--orange), var(--orange-light));
+  box-shadow:0 12px 28px rgba(219,96,20,.28);
+}
+.btn-primary::after{
+  content:''; position:absolute; inset:0; transform:translateX(-110%);
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.36), transparent);
+  animation: sheen 2.6s infinite;
+}
+@keyframes sheen { 0%,45%{transform:translateX(-110%)} 75%,100%{transform:translateX(110%)} }
+.powered,.disclaimer{ text-align:center; }
+
+/* quiz：讓它像選牌，不像問卷 */
+.quiz.active{
+  margin-top:20px; padding:22px 16px 18px; border-radius:26px;
+  background:rgba(255,255,255,.76); border:1px solid rgba(232,221,208,.92);
+  box-shadow:var(--shadow-soft);
+}
+.progress-bars{ gap:7px; margin-bottom:10px; }
+.progress-bar{ height:6px; background:#EEE3D8; }
+.progress-bar.done{ background:linear-gradient(90deg,var(--orange),var(--orange-light)); }
+.progress-bar.active{ background:linear-gradient(90deg,var(--orange-light),#FFC28E); box-shadow:0 0 0 4px rgba(255,134,59,.12); }
+.progress-label{ margin-bottom:20px; }
+.quiz-phase{
+  display:inline-flex; padding:7px 10px; border-radius:999px; background:var(--orange-pale);
+  color:var(--orange); margin-bottom:12px;
+}
+.quiz-q{ font-size:1.28rem; line-height:1.48; margin-bottom:18px; }
+.options{ gap:12px; margin-bottom:22px; }
+.opt-btn{
+  position:relative; align-items:center; padding:15px 15px; border-radius:18px;
+  background:linear-gradient(180deg,#fff,#FFFCF8); box-shadow:0 8px 18px rgba(44,26,10,.055);
+  border:1.5px solid rgba(232,221,208,.95);
+}
+.opt-btn::before{
+  content:''; position:absolute; inset:0; border-radius:18px; opacity:0; pointer-events:none;
+  background:linear-gradient(135deg, rgba(219,96,20,.10), rgba(255,134,59,.04)); transition:.18s;
+}
+.opt-btn.selected{ border-color:var(--orange); background:#FFF4EB; box-shadow:var(--shadow-press); }
+.opt-btn.selected::before{ opacity:1; }
+.opt-label{
+  width:34px; height:34px; min-width:34px; padding:0; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  background:#F3ECE4; color:var(--brown-mid); font-size:.78rem;
+}
+.opt-btn.selected .opt-label{ background:var(--orange); color:#fff; }
+.opt-text{ font-size:.94rem; font-weight:600; }
+.opt-text small{ display:block; margin-top:3px; font-weight:400; color:var(--brown-mid); }
+.option-emoji{ font-size:1.25rem; margin-left:auto; opacity:.72; }
+.btn-next,.btn-prev{ border-radius:14px; }
+.btn-next{ box-shadow:0 8px 18px rgba(219,96,20,.18); }
+
+/* result：先命中，再誘導分享 */
+.result{ padding-top:22px; }
+.result-header{
+  border-radius:24px; padding:22px; margin-bottom:14px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.92), rgba(245,240,232,.96)),
+    radial-gradient(circle at 100% 0%, rgba(255,134,59,.18), transparent 32%);
+  box-shadow:var(--shadow-soft);
+}
+.result-eyebrow{ display:inline-flex; padding:6px 10px; border-radius:999px; background:var(--orange-pale); }
+.result-animal-emoji{ font-size:2.9rem; }
+.result-name{ font-size:1.72rem; }
+.result-hit{
+  margin-top:12px; padding:12px 14px; border-radius:16px; background:#fff; border:1px solid var(--border);
+  color:var(--brown-deep); font-weight:800; line-height:1.55; box-shadow:0 8px 18px rgba(44,26,10,.05);
+}
+.result-hit span{ color:var(--orange); }
+.share-section{
+  border-radius:24px; box-shadow:var(--shadow-soft); border:1px solid rgba(232,221,208,.96); margin-bottom:18px;
+}
+.share-section-header{ font-size:1.2rem; padding-top:18px; }
+.share-section-sub{ font-size:.82rem; }
+.share-card-wrap{ border-radius:18px; margin:0 14px; }
+.share-badge{
+  display:inline-flex; align-items:center; gap:6px; margin:14px 16px 0; padding:7px 10px;
+  border-radius:999px; background:#FFF4EB; color:var(--orange); font-size:.76rem; font-weight:800;
+}
+.btn-download{ border-radius:18px; padding:16px; box-shadow:0 12px 28px rgba(219,96,20,.24); }
+.share-caption-box{
+  margin:0 0 18px; padding:16px; border-radius:22px; background:rgba(255,255,255,.82);
+  border:1px solid var(--border); box-shadow:0 10px 24px rgba(44,26,10,.06);
+}
+.share-caption-title{ font-weight:800; color:var(--brown-deep); margin-bottom:6px; }
+.share-caption-preview{
+  font-size:.84rem; color:var(--brown-mid); line-height:1.7; padding:12px; border-radius:14px;
+  background:var(--cream); border:1px dashed var(--border); margin-bottom:10px; white-space:pre-line;
+}
+.btn-caption-copy{
+  width:100%; border:1.5px solid var(--orange); background:#fff; color:var(--orange); border-radius:14px;
+  padding:12px; font-weight:800; font-family:'DM Sans', sans-serif; cursor:pointer;
+}
+.section-heading{ margin-top:22px; }
+.audience-card,.insight-card,.tip-list,.product-card,.discuss-item{ box-shadow:0 8px 20px rgba(44,26,10,.045); }
+.cta-block{
+  border-radius:24px; background:
+    radial-gradient(circle at 100% 0%, rgba(255,134,59,.28), transparent 38%),
+    linear-gradient(145deg,#2C1A0A,#48260E);
+  box-shadow:0 14px 34px rgba(44,26,10,.20);
+}
+.cta-title{ font-size:1.25rem; }
+.btn-cta{ border-radius:16px; padding:15px; }
+.share-link-section{ padding:18px; border-radius:22px; background:rgba(255,255,255,.74); border:1px solid var(--border); }
+.btn-copy{ border-radius:16px; }
+.toast{ bottom:22px; max-width:calc(100vw - 32px); white-space:normal; text-align:center; }
+
+@media (max-width:420px){
+  .app{ padding-left:14px; padding-right:14px; }
+  .persona-preview{ grid-template-columns: repeat(2, 1fr); }
+  .intro-title{ font-size:2.05rem; }
+  .quiz-q{ font-size:1.18rem; }
+  .audience-grid{ grid-template-columns: 1fr; }
+  .audience-card:last-child:nth-child(odd){ grid-column:auto; }
+}
+
+
+/* remove homepage four-persona preview */
+.persona-preview{ display:none !important; }
+
 </style>
 </head>
 <body>
@@ -319,20 +533,21 @@ body {
 
   <!-- ── INTRO PAGE ── -->
   <div id="page-intro" class="page active intro">
-    <h1 class="intro-title serif">美髮設計師<br>社群人格分析</h1>
-    <p class="intro-sub">RENATA × Holymake 為你量身打造</p>
-    <p class="intro-desc">6 道題，找出你的社群人格、你吸引的受眾類型，<br>以及最適合你客群的髮品推薦方向。</p>
-    <p class="intro-meta">⏱ 約 2 分鐘 · 6 題 · 3 個分析維度</p>
-    <div class="tag-row">
-      <span class="tag tag-a">社群人格</span>
-      <span class="tag-arrow">→</span>
-      <span class="tag tag-b">吸引的觀眾類型</span>
-      <span class="tag-arrow">→</span>
-      <span class="tag tag-c">髮品推薦方向</span>
+    <div class="intro-hero">
+      <div class="intro-kicker">✨ 6 題測出你的社群吸客體質</div>
+      <h1 class="intro-title serif">你的社群，<br>正在吸引<span class="accent">哪一種客人？</span></h1>
+      <p class="intro-sub">RENATA × Holymake 為美髮師設計的社群人格測驗</p>
+      <p class="intro-desc">測完你會拿到一張可分享的結果卡，還會知道：<strong>你最容易吸引誰、適合拍什麼內容、可以怎麼把髮品推薦變自然。</strong></p>
+      <div class="intro-meta">
+        <span>⏱ 約 2 分鐘</span>
+        <span>🧩 6 題完成</span>
+        <span>📲 可下載結果卡</span>
+      </div>
+
+      <button class="btn-primary" onclick="startQuiz()">開始測驗，拿我的結果卡 →</button>
     </div>
-    <button class="btn-primary" onclick="startQuiz()">開始分析</button>
     <p class="powered">Powered by <strong>RENATA</strong> × Holymake</p>
-    <p class="disclaimer">本測驗結果純屬娛樂與參考，不代表專業心理診斷。</p>
+    <p class="disclaimer">本測驗結果為社群內容參考，不代表專業心理診斷。</p>
   </div>
 
   <!-- ── QUIZ PAGE ── -->
@@ -357,12 +572,14 @@ body {
       <div class="result-name serif" id="r-name"></div>
       <div class="result-tags" id="r-tags"></div>
       <div class="result-desc" id="r-desc"></div>
+      <div class="result-hit" id="r-hit"></div>
     </div>
 
     <!-- 分享卡片區塊 -->
     <div class="share-section">
-      <div class="share-section-header serif">分享你的專屬結果卡</div>
-      <div class="share-section-sub">圖片產生後可直接下載，分享到 IG 限時動態</div>
+      <div class="share-section-header serif">你的專屬結果卡已生成</div>
+      <div class="share-section-sub">覺得有準，就直接存圖發限動。分享阻力已經幫你降到最低。</div>
+      <div class="share-badge">🔥 適合發 IG 限動 / LINE 群組 / 客人互動</div>
       <div class="share-card-wrap">
         <div class="share-card-loading" id="share-loading">
           <div class="spinner"></div>
@@ -372,7 +589,7 @@ body {
       </div>
       <div class="share-btn-wrap">
         <a id="btn-download" class="btn-download" style="display:none" download="renata-holymake.jpg">
-          <span>⬇️</span> 儲存圖片，分享到 IG
+          <span>⬇️</span> 儲存結果卡，分享到 IG
         </a>
       </div>
       <div class="share-hint" id="share-hint" style="display:none">
@@ -380,6 +597,12 @@ body {
         <span class="share-hint-line">🤖 <span>Android</span>：點上方按鈕下載</span>
         <span class="share-hint-sub">儲存後直接開啟 IG → 限時動態貼上即可</span>
       </div>
+    </div>
+
+    <div class="share-caption-box">
+      <div class="share-caption-title">懶得想文案？這段可以直接複製</div>
+      <div class="share-caption-preview" id="share-caption-preview"></div>
+      <button class="btn-caption-copy" onclick="copyShareCaption()">複製 IG 分享文案</button>
     </div>
 
     <div class="section-heading serif">人格維度分析</div>
@@ -417,15 +640,15 @@ body {
     <hr class="divider">
 
     <div class="cta-block">
-      <div class="cta-title serif">想把這份結果變成實際銷售內容？</div>
-      <div class="cta-desc">你可以先和業務討論適合的髮品組合，再由吼莉協助規劃社群內容與短影音拍攝，讓產品不只是被介紹，而是被客人看懂、被需要。</div>
-      <button class="btn-cta" onclick="savePDF()"><span>📄</span> 儲存報告，並傳給 RENATA 業務</button>
+      <div class="cta-title serif">測完不知道怎麼發？</div>
+      <div class="cta-desc">讓 Holymake 把你的社群人格，整理成一套「專屬美髮師的社群內容規劃」：包含主題方向、拍攝切角、髮品推薦情境與限動互動設計。</div>
+      <button class="btn-cta" onclick="savePDF()"><span>📄</span> 儲存完整報告，拿去討論內容規劃</button>
     </div>
 
     <div class="share-link-section">
-      <div class="share-link-title">喜歡這份分析嗎？</div>
-      <div class="share-link-sub">分享給你的朋友，讓他們也測測看吧！</div>
-      <button class="btn-copy" onclick="copyLink()"><span>🔗</span> 複製測驗連結，分享給朋友</button>
+      <div class="share-link-title">這個測驗適合丟給設計師朋友</div>
+      <div class="share-link-sub">一個人測叫有趣，一群人測才會開始互相吐槽。</div>
+      <button class="btn-copy" onclick="copyLink()"><span>🔗</span> 複製測驗連結</button>
     </div>
 
     <div style="text-align:center;margin-top:24px;">
@@ -441,7 +664,7 @@ body {
 
 <script>
 // ─── DATA ───────────────────────────────────────────────────────
-const PHASES = ['社群人格','吸引的觀眾','觀眾需求'];
+const PHASES = ['社群習慣','吸引磁場','客人需求'];
 const QS = [
   {phase:0,text:'你在社群上最常發什麼類型的內容？',opts:[
     {t:'染燙前後對比、造型成品照',d:{visual:3,trend:1}},
@@ -603,6 +826,7 @@ function startQuiz() {
 function renderQ() {
   const q = QS[cur];
   const labels = ['A','B','C','D'];
+  const optionEmoji = ['🎨','☕','🔍','🔥'];
 
   // progress bars
   const bars = document.getElementById('progress-bars');
@@ -617,12 +841,13 @@ function renderQ() {
   opts.innerHTML = q.opts.map((o,i)=>`
     <button class="opt-btn ${answers[cur]===i?'selected':''}" onclick="pickAnswer(${i})">
       <span class="opt-label">${labels[i]}</span>
-      <span class="opt-text">${o.t}</span>
+      <span class="opt-text">${o.t}<small>${answers[cur]===i?'已選擇，下一步看更準':'選最像你日常的那一個'}</small></span>
+      <span class="option-emoji">${optionEmoji[i]}</span>
     </button>`).join('');
 
   document.getElementById('btn-prev').disabled = cur===0;
   document.getElementById('btn-next').disabled = answers[cur]===undefined;
-  document.getElementById('btn-next').textContent = cur===QS.length-1 ? '查看報告 →' : '下一題 →';
+  document.getElementById('btn-next').textContent = cur===QS.length-1 ? '生成我的結果卡 →' : (answers[cur]===undefined ? '先選一個答案' : '下一題 →');
 }
 
 function pickAnswer(i) {
@@ -651,6 +876,9 @@ function showResult() {
   document.getElementById('r-name').innerHTML = `${p.animalName} <span>(${p.name})</span>`;
   document.getElementById('r-tags').textContent = p.animalHashtags.join(' ') + ` · 世界上約有 ${p.rarity}% 的人與你一樣！`;
   document.getElementById('r-desc').textContent = p.desc;
+  document.getElementById('r-hit').innerHTML = `<span>命中一句：</span>${getResultHit(p)}`;
+  const captionEl = document.getElementById('share-caption-preview');
+  if(captionEl) captionEl.textContent = getShareCaption(p);
 
   // bars
   document.getElementById('r-bars').innerHTML = p.bars.map(b=>`
@@ -953,13 +1181,38 @@ function toast(msg){
   t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2800);
 }
+
+function getResultHit(p){
+  const map = {
+    '濾鏡孔雀':'你的作品不是庫存照片，是讓客人產生「我也想變這樣」的預約開關。',
+    '暖心水豚':'你的社群最強的不是技巧展示，而是讓客人覺得「這個人懂我」。',
+    '百科貓頭鷹':'你的信任感來自講得清楚；你越能解釋，客人越敢買單。',
+    '追風獵豹':'你天生適合把話題變成流量，但要記得把流量接回預約入口。'
+  };
+  return map[p.animalName] || '你的社群有自己的吸引力，重點是把它變成可執行的內容節奏。';
+}
+function getShareCaption(p){
+  return `我測出來是：${p.animalName} ${p.animalEmoji}\n\n原來我的社群人格是「${p.name}」：${getResultHit(p)}\n\n你是哪一種美髮師社群人格？\n#RENATA #Holymake #美髮師社群人格`;
+}
+function copyShareCaption(){
+  const pk = classify();
+  const txt = getShareCaption(P[pk]);
+  try{
+    navigator.clipboard.writeText(txt).then(()=>toast('分享文案已複製，可以直接貼到 IG ✨'));
+  }catch(e){
+    const inp=document.createElement('textarea');
+    inp.value=txt; document.body.appendChild(inp); inp.select(); document.execCommand('copy'); document.body.removeChild(inp);
+    toast('分享文案已複製，可以直接貼到 IG ✨');
+  }
+}
+
 function copyLink(){
   try{navigator.clipboard.writeText(location.href).then(()=>toast('測驗連結已複製！快去分享吧 ✨'));}
   catch(e){
     const inp=document.createElement('input');
     inp.value=location.href;document.body.appendChild(inp);
     inp.select();document.execCommand('copy');document.body.removeChild(inp);
-    toast('測驗連結已複製！快去分享吧 ✨');
+    toast('測驗連結已複製！丟群組剛好 ✨');
   }
 }
 function savePDF(){
